@@ -43,6 +43,20 @@
       "when": 1788444445892,
       "tag": "0005_execution_immutability",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788444847270,
+      "tag": "0006_pretty_guardsmen",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788444857985,
+      "tag": "0007_finalization_immutability",
+      "breakpoints": true
     }
   ]
 }

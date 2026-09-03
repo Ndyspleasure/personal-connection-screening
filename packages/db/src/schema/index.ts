@@ -3,3 +3,4 @@ export * from './questionnaire';
 export * from './scoring';
 export * from './policy';
 export * from './execution';
+export * from './finalization';

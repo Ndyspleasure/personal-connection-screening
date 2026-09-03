@@ -21,4 +21,7 @@ export type {
   Answer,
   AttemptPolicySnapshot,
 } from './schema/execution';
+export type { Submission, Evaluation, Result, Verification } from './schema/finalization';
 export * from './repositories/execution';
+export * from './repositories/answers';
+export * from './repositories/finalization';
