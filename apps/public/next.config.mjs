@@ -10,6 +10,7 @@ const nextConfig = {
     '@pcs/ui',
     '@pcs/validation',
   ],
+  // Silence Next 15's cross-origin-request check when running behind a reverse proxy.
   // Keep the native/node database driver out of the bundle (server-only).
   serverExternalPackages: ['postgres'],
 };

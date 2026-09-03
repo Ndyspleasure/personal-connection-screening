@@ -99,6 +99,9 @@ importers:
       '@pcs/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@pcs/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       next:
         specifier: ^15.1.4
         version: 15.5.25(@types/node@22.20.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
