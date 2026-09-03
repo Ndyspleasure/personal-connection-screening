@@ -1,17 +1,20 @@
 # Personal Connection Screening System
+
 ## Repository Audit, Architecture Assessment & Implementation Plan
+
 ### Planning deliverable — v0.1 (pre-implementation)
 
 > **Status:** Planning only. **No application code has been written.** This document is the required first-pass response to Brief §57 ("Your First Task") and Brief §51 ("Implementation Order"). Implementation begins only after this plan is reviewed and the open product decisions in §4 are confirmed.
 >
 > **Source of truth:** the five specification documents committed to this repository:
+>
 > - `personal-connection-screening-system-spec-v0.1.md` (Master System Spec)
 > - `personal-connection-screening-functional-spec-v0.1.md`
 > - `personal-connection-screening-security-threat-model-v0.1.md`
 > - `personal-connection-screening-data-state-model-v0.1(1).md`
 > - `personal-connection-screening-technology-architecture-stack-v0.1.md`
 >
-> All five have been read in full. Section references below (e.g. *Sec §21*, *Data §46*, *Threat TH-024*, *AC SEC-AC-09*) point back to those documents so the implementation stays traceable to specification (Brief §54).
+> All five have been read in full. Section references below (e.g. _Sec §21_, _Data §46_, _Threat TH-024_, _AC SEC-AC-09_) point back to those documents so the implementation stays traceable to specification (Brief §54).
 
 ---
 
@@ -19,17 +22,17 @@
 
 ### 1.1 Current state
 
-| Aspect | Finding |
-|---|---|
-| **Framework / code** | **None.** The repository contains no application code. |
-| **Directory structure** | Flat. Five `*.md` specification files at the repo root; nothing else. |
-| **Package manager** | Not configured. No `package.json`, `pnpm-workspace.yaml`, lockfile, or `node_modules`. |
-| **Dependencies** | None. |
-| **Database setup** | None. No migrations, no schema, no Supabase config, no `DATABASE_URL`. |
-| **Authentication** | None. No Supabase Auth, no session code, no cookies. |
-| **Deployment config** | None. No `vercel.json`, no CI workflows (`.github/`), no env files. |
-| **Reusable code/components** | None (no code). The **five specs are themselves the reusable asset** — an unusually complete, self-consistent blueprint covering behavior, functional flows, threats, data/state, and stack. |
-| **Git** | On branch `claude/connection-screening-system-mpl4my` (the designated development branch). Working tree clean. One commit: `7e75f3a "Menambah pondasi projek"` adding the five specs (12,946 lines). Remote: `github.com/Ndyspleasure/personal-connection-screening`. |
+| Aspect                       | Finding                                                                                                                                                                                                                                                               |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Framework / code**         | **None.** The repository contains no application code.                                                                                                                                                                                                                |
+| **Directory structure**      | Flat. Five `*.md` specification files at the repo root; nothing else.                                                                                                                                                                                                 |
+| **Package manager**          | Not configured. No `package.json`, `pnpm-workspace.yaml`, lockfile, or `node_modules`.                                                                                                                                                                                |
+| **Dependencies**             | None.                                                                                                                                                                                                                                                                 |
+| **Database setup**           | None. No migrations, no schema, no Supabase config, no `DATABASE_URL`.                                                                                                                                                                                                |
+| **Authentication**           | None. No Supabase Auth, no session code, no cookies.                                                                                                                                                                                                                  |
+| **Deployment config**        | None. No `vercel.json`, no CI workflows (`.github/`), no env files.                                                                                                                                                                                                   |
+| **Reusable code/components** | None (no code). The **five specs are themselves the reusable asset** — an unusually complete, self-consistent blueprint covering behavior, functional flows, threats, data/state, and stack.                                                                          |
+| **Git**                      | On branch `claude/connection-screening-system-mpl4my` (the designated development branch). Working tree clean. One commit: `7e75f3a "Menambah pondasi projek"` adding the five specs (12,946 lines). Remote: `github.com/Ndyspleasure/personal-connection-screening`. |
 
 Verification performed: recursive file search for `package.json`, `pnpm-workspace.yaml`, `tsconfig.json`, `*.ts`, `*.tsx`, `*.sql`, `.env*`, `Dockerfile`, `vercel.json` — **all empty**.
 
@@ -38,6 +41,7 @@ Verification performed: recursive file search for `package.json`, `pnpm-workspac
 **None.** This is a clean greenfield. There is no existing code to overwrite, no dependency to reconcile, and no architectural decision already baked into code that fights the recommended stack. Brief §50 ("do not overwrite unrelated work", "identify conflicts before destructive changes") is satisfied trivially: nothing will be overwritten.
 
 The only two housekeeping items (not conflicts):
+
 1. The spec files live at the repo root with versioned filenames. During Phase 1 they should move to `/docs` (Brief §54) — a non-destructive `git mv`, preserving history.
 2. `origin/HEAD` is not set; the default branch is `main`. PRs from the feature branch will target `main`.
 
@@ -55,29 +59,29 @@ The repository is a **specification-first greenfield**. Implementation can proce
 
 ### 2.2 Confirmed stack (Tech §1, §135)
 
-| Layer | Choice |
-|---|---|
-| Language | TypeScript (strict) |
-| Public Web | Next.js (App Router) on Vercel — deploy target `connect.<domain>` |
-| Admin CMS | Next.js (App Router) on Vercel — deploy target `admin.<domain>` |
-| System of record | PostgreSQL via Supabase |
-| DB access | Drizzle ORM (server-side only), migrations in Git |
-| Admin auth | Supabase Auth (MFA-capable) |
-| Public session | Custom server-issued **opaque** token + HttpOnly/Secure/SameSite cookie |
-| Validation | Zod (shared client+server schemas; server is authoritative) |
-| Rate limiting | Vercel WAF (outer) + **Upstash Redis** (app-layer, distributed) — see Risk R-08 |
-| Storage | Supabase Storage (deferred; not required for MVP) |
-| Testing | Vitest (unit/integration) + Playwright (E2E) + API-level security tests |
-| Package manager | pnpm (workspaces) |
-| Monorepo orchestration | pnpm workspaces + **Turborepo** (task graph/caching) |
-| Repo / CI | GitHub monorepo + Vercel Git integration + GitHub Actions |
+| Layer                  | Choice                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| Language               | TypeScript (strict)                                                             |
+| Public Web             | Next.js (App Router) on Vercel — deploy target `connect.<domain>`               |
+| Admin CMS              | Next.js (App Router) on Vercel — deploy target `admin.<domain>`                 |
+| System of record       | PostgreSQL via Supabase                                                         |
+| DB access              | Drizzle ORM (server-side only), migrations in Git                               |
+| Admin auth             | Supabase Auth (MFA-capable)                                                     |
+| Public session         | Custom server-issued **opaque** token + HttpOnly/Secure/SameSite cookie         |
+| Validation             | Zod (shared client+server schemas; server is authoritative)                     |
+| Rate limiting          | Vercel WAF (outer) + **Upstash Redis** (app-layer, distributed) — see Risk R-08 |
+| Storage                | Supabase Storage (deferred; not required for MVP)                               |
+| Testing                | Vitest (unit/integration) + Playwright (E2E) + API-level security tests         |
+| Package manager        | pnpm (workspaces)                                                               |
+| Monorepo orchestration | pnpm workspaces + **Turborepo** (task graph/caching)                            |
+| Repo / CI              | GitHub monorepo + Vercel Git integration + GitHub Actions                       |
 
 ### 2.3 Implementation-level decisions the specs left open (proposed)
 
 These translate the specs' "exact X is an implementation choice" statements into concrete choices. Each is reversible behind the domain layer.
 
-- **A-1 — Identifiers (Data §5, §113).** Internal PKs: **UUID v7** (time-sortable, index-friendly). External references: a **separate, opaque, prefixed, high-entropy** string per entity (`ses_`, `att_`, `sub_`, `res_`, `ver_` + ~128 bits base32-crockford). The public reference is *never* the DB PK (Threat TH-009 IDOR, Sec §21.3, §40).
-- **A-2 — Public session token (Tech §12–14, Threat TH-001/002/006).** 32 random bytes → base64url raw token sent only in the cookie; DB stores **only a SHA-256 fingerprint** (Tech §13, §114). Cookie carries the token *reference*, never business state. Cookie: `HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age` aligned to session lifetime (Sec §67). Every sensitive request re-validates server-side (Sec §5.4, Threat TH-004/005).
+- **A-1 — Identifiers (Data §5, §113).** Internal PKs: **UUID v7** (time-sortable, index-friendly). External references: a **separate, opaque, prefixed, high-entropy** string per entity (`ses_`, `att_`, `sub_`, `res_`, `ver_` + ~128 bits base32-crockford). The public reference is _never_ the DB PK (Threat TH-009 IDOR, Sec §21.3, §40).
+- **A-2 — Public session token (Tech §12–14, Threat TH-001/002/006).** 32 random bytes → base64url raw token sent only in the cookie; DB stores **only a SHA-256 fingerprint** (Tech §13, §114). Cookie carries the token _reference_, never business state. Cookie: `HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age` aligned to session lifetime (Sec §67). Every sensitive request re-validates server-side (Sec §5.4, Threat TH-004/005).
 - **A-3 — Optimistic concurrency (Data §57–58, Threat TH-026/027).** Mutable active rows (`session`, `answer` aggregate, draft entities) carry an integer `revision`. Writes are guarded `... WHERE id = $1 AND revision = $expected`; a 0-row update → `STALE_STATE` (409), never a silent overwrite.
 - **A-4 — One-final-submission (Data §34, §61, INV-D06, Threat TH-024/029).** A **partial unique index** `UNIQUE (attempt_id) WHERE status = 'COMPLETED'` (or a `final_submission` boolean flag with a partial unique index) enforces it at the database, independent of application logic. Submit also carries an `idempotency_key` unique per attempt (Data §60, Tech §30).
 - **A-5 — Finalization atomicity (Data §83–84, Tech §32, Sec §39).** Submit finalization runs in a **single Postgres transaction**: lock/finalize attempt → create submission → run (lightweight, synchronous) evaluation → persist evaluation + result → create verification → write audit. `SELECT … FOR UPDATE` on the attempt row serializes competing submits; the loser reads the existing result (Data §59, §111; Func §51). Evaluation stays in-request for MVP because scoring is lightweight (Tech §33); an async job path is a documented future migration if AI/long-running eval is added (Tech §33, §91).
@@ -173,17 +177,17 @@ Server-only modules are explicitly separated from client-safe exports so no secr
 - **Domain services:** `SessionService` (start/resume/expire/revoke; state machine `NEW→ACTIVE→{COMPLETED,EXPIRED,ABANDONED,REVOKED}`, Data §26, §53); `AnswerService` (validated, revision-checked, idempotent autosave; Func §24, §29; Data §82); `SubmissionService.finalize()` (A-5, the atomic finalize+evaluate+result+verification, Tech §103); `ResultService`, `VerificationService` (with a strict `VerificationPublicView` DTO, Tech §38–39; Threat TH-008); `RetakeService` (server-side eligibility: mode/max/cooldown from locked policy; Func §71–78; Threat TH-021/022).
 - **Public API routes** (Tech §22; Func §4):
 
-  | Method + Route | Purpose | Key protections |
-  |---|---|---|
-  | `POST /api/public/session` | Start / idempotent create | dedupe active session, rate limit, lock versions (Func §7, §7.2) |
-  | `GET /api/public/session` | Resume / current state | server-authoritative state (Func §6, §13, §17) |
-  | `GET /api/public/questionnaire` | Locked version + questions | version from session, never client (Func §19, §34) |
-  | `PUT /api/public/answer` | Save answer | revision check, type/option/version validation (Func §46; Data §67–69) |
-  | `POST /api/public/submission` | Submit | idempotency key, atomic finalize, server scoring (Func §46–51) |
-  | `GET /api/public/result/:ref` | Result | ownership via session, opaque ref (Func §64–65) |
-  | `GET /api/public/verify/:ref` | Public verification | public projection only (Func §67) |
-  | `GET /api/public/retake` | Eligibility | server policy (Func §71) |
-  | `GET /api/public/contact/:ref` | Contact gate | PASS + policy only (Func §69) |
+  | Method + Route                  | Purpose                    | Key protections                                                        |
+  | ------------------------------- | -------------------------- | ---------------------------------------------------------------------- |
+  | `POST /api/public/session`      | Start / idempotent create  | dedupe active session, rate limit, lock versions (Func §7, §7.2)       |
+  | `GET /api/public/session`       | Resume / current state     | server-authoritative state (Func §6, §13, §17)                         |
+  | `GET /api/public/questionnaire` | Locked version + questions | version from session, never client (Func §19, §34)                     |
+  | `PUT /api/public/answer`        | Save answer                | revision check, type/option/version validation (Func §46; Data §67–69) |
+  | `POST /api/public/submission`   | Submit                     | idempotency key, atomic finalize, server scoring (Func §46–51)         |
+  | `GET /api/public/result/:ref`   | Result                     | ownership via session, opaque ref (Func §64–65)                        |
+  | `GET /api/public/verify/:ref`   | Public verification        | public projection only (Func §67)                                      |
+  | `GET /api/public/retake`        | Eligibility                | server policy (Func §71)                                               |
+  | `GET /api/public/contact/:ref`  | Contact gate               | PASS + policy only (Func §69)                                          |
 
 - **Public UI (thin, state-driven, CMS copy):** landing/about → start/confirm → questionnaire (component registry per question type, Tech §127) → resume/expired/processing/result/verify screens, each mapped to server state (Func §118). PASS/FAIL copy is CMS-driven and non-judgmental (Func §62; Brief §28).
 - **Tests (integration + E2E, correctness-critical):** double-start → one session; refresh → resume same session; expired → cannot submit, not FAIL; two-tab stale write → 409; **double submit → one final submission/result/verification**; submit timeout → reload returns existing result, no duplicate (Func §48–51, §130; AC PUB-11/12, SUB-05/06, SEC-AC-09/10); Q3-replacement → no cross-version answer contamination (Func §132; VER-04).
@@ -219,24 +223,24 @@ Every Brief §56 checkbox maps to a phase and a test: CMS-driven content (P5/CMS
 
 ### 4.1 Ambiguous requirements — the open product decisions (with recommended MVP defaults)
 
-The specs enumerate ~20 explicitly open decisions (Func §135, Sec §81, Data). They are *product* decisions, not architecture blockers, but a handful change the **schema or core logic** and should be confirmed before Phase 3/4. Recommended defaults:
+The specs enumerate ~20 explicitly open decisions (Func §135, Sec §81, Data). They are _product_ decisions, not architecture blockers, but a handful change the **schema or core logic** and should be confirmed before Phase 3/4. Recommended defaults:
 
-| # | Decision (spec ref) | Recommended MVP default | Affects |
-|---|---|---|---|
-| D-1 | Questionnaire timer semantics — absolute vs active-time (Func §135.6, §133) | **Absolute** deadline from `questionnaire_started_at` (simplest, matches Data §28) | schema/logic |
-| D-2 | Multi-device use of one session (Func §135.7; Sys §14, §11.2) | **Allowed**, reconciled by optimistic concurrency (A-3); never IP/device identity | logic |
-| D-3 | Completed-FAIL may retake same version (Func §135.8, §19.2) | **Policy-driven**; default retake mode `ON_NEW_VERSION` | logic |
-| D-4 | Default max attempts / cooldown (Func §135.9–10) | `max_attempts = 3`, `cooldown = none` (configurable) | data |
-| D-5 | Public verification shows PASS/FAIL? (Func §135.11, §67) | **Show** validity + PASS/FAIL + completion date + version label; nothing else (Sec §42) | DTO |
-| D-6 | Public result shows numeric score? (Func §135.13) | **No** (privacy; Sec §42) | DTO/UI |
-| D-7 | Candidate name/contact collected? (Func §135.14; Data §76) | **No** for core flow; captured only at the contact gate after PASS | schema/privacy |
-| D-8 | Session revocation in MVP? (Func §135.18) | **Yes** — it is a P0 security control (Threat TH-004; Sec §33) | logic |
-| D-9 | Verification revocation in MVP? (Func §135.19, §115) | **Defer**; model a `status` column now, no UI | schema (cheap) |
-| D-10 | Branching questions in MVP? (Func §135.16, §134) | **Defer** | scope |
-| D-11 | Admin roles (Tech §18) | **Single owner role** MVP; schema leaves room for roles | scope |
-| D-12 | MVP question types (Func §135.1, §20) | single-choice, multiple-choice, boolean, text, numeric | builder scope |
+| #    | Decision (spec ref)                                                         | Recommended MVP default                                                                 | Affects        |
+| ---- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | -------------- |
+| D-1  | Questionnaire timer semantics — absolute vs active-time (Func §135.6, §133) | **Absolute** deadline from `questionnaire_started_at` (simplest, matches Data §28)      | schema/logic   |
+| D-2  | Multi-device use of one session (Func §135.7; Sys §14, §11.2)               | **Allowed**, reconciled by optimistic concurrency (A-3); never IP/device identity       | logic          |
+| D-3  | Completed-FAIL may retake same version (Func §135.8, §19.2)                 | **Policy-driven**; default retake mode `ON_NEW_VERSION`                                 | logic          |
+| D-4  | Default max attempts / cooldown (Func §135.9–10)                            | `max_attempts = 3`, `cooldown = none` (configurable)                                    | data           |
+| D-5  | Public verification shows PASS/FAIL? (Func §135.11, §67)                    | **Show** validity + PASS/FAIL + completion date + version label; nothing else (Sec §42) | DTO            |
+| D-6  | Public result shows numeric score? (Func §135.13)                           | **No** (privacy; Sec §42)                                                               | DTO/UI         |
+| D-7  | Candidate name/contact collected? (Func §135.14; Data §76)                  | **No** for core flow; captured only at the contact gate after PASS                      | schema/privacy |
+| D-8  | Session revocation in MVP? (Func §135.18)                                   | **Yes** — it is a P0 security control (Threat TH-004; Sec §33)                          | logic          |
+| D-9  | Verification revocation in MVP? (Func §135.19, §115)                        | **Defer**; model a `status` column now, no UI                                           | schema (cheap) |
+| D-10 | Branching questions in MVP? (Func §135.16, §134)                            | **Defer**                                                                               | scope          |
+| D-11 | Admin roles (Tech §18)                                                      | **Single owner role** MVP; schema leaves room for roles                                 | scope          |
+| D-12 | MVP question types (Func §135.1, §20)                                       | single-choice, multiple-choice, boolean, text, numeric                                  | builder scope  |
 
-**Risk:** proceeding to Phase 3/4 without confirming D-1, D-5, D-7 (schema/DTO-affecting) risks rework. → *Mitigation:* confirm these in the review of this plan.
+**Risk:** proceeding to Phase 3/4 without confirming D-1, D-5, D-7 (schema/DTO-affecting) risks rework. → _Mitigation:_ confirm these in the review of this plan.
 
 ### 4.2 Technical risks
 
@@ -253,7 +257,7 @@ The specs enumerate ~20 explicitly open decisions (Func §135, Sec §81, Data). 
 
 ### 4.4 Security risks (Threat model P0 clusters — must all ship before launch)
 
-- **R-08 — Distributed rate limiting on serverless.** In-memory counters don't work across Vercel instances; WAF alone won't cover business-operation limits (Tech §35 note). → **Adopt Upstash Redis from the start** for start/submit/verify/admin-login (a deliberate lean-forward from the specs' "optional Redis"; Sec §28, §36). *Decision to confirm:* Redis day-one vs WAF+DB-counter interim.
+- **R-08 — Distributed rate limiting on serverless.** In-memory counters don't work across Vercel instances; WAF alone won't cover business-operation limits (Tech §35 note). → **Adopt Upstash Redis from the start** for start/submit/verify/admin-login (a deliberate lean-forward from the specs' "optional Redis"; Sec §28, §36). _Decision to confirm:_ Redis day-one vs WAF+DB-counter interim.
 - **R-09 — The P0 threat surface is the product.** Server-side scoring, per-resource authorization, opaque IDs + rate limits, idempotent submit, CSRF/origin on cookie writes, XSS encoding for CMS + answers, admin auth/MFA, secret boundary, safe errors (Threat TH-001…TH-049; Sec §66 invariants). → These are not "hardening later"; they are built into Phases 2 and 4 and gated by the security test suite (Sec §77). Missing any one fails the Sec §79 baseline.
 
 ### 4.5 Migration / data & process risks

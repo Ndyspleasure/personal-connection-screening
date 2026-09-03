@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build outputs
+dist/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# test / coverage
+coverage/
+playwright-report/
+test-results/
+
+# env / secrets — never commit real secrets
+.env
+.env.*
+!.env.example
+
+# logs / misc
+*.log
+npm-debug.log*
+.DS_Store
+
+# next generated types
+next-env.d.ts
