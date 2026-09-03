@@ -5,6 +5,7 @@ import {
   getPolicyVersion,
   insertDraftPolicyVersion,
   nextPolicyVersionNumber,
+  type AttemptPolicySnapshot,
   type Database,
   type PolicyVersion,
 } from '@pcs/db';
@@ -63,12 +64,15 @@ export function validatePolicyDraft(input: PolicyDraftInput): void {
 }
 
 /** Snapshot policy values onto an attempt (Data §20, §46; INV-D07). */
-export function snapshotPolicyVersion(pv: PolicyVersion) {
+export function snapshotPolicyVersion(pv: PolicyVersion): AttemptPolicySnapshot {
+  if (pv.timerMode !== 'absolute') {
+    throw new AppError('INTEGRITY_ERROR', `unsupported timerMode ${pv.timerMode}`);
+  }
   return {
     policyVersionId: pv.id,
     sessionLifetimeSeconds: pv.sessionLifetimeSeconds,
     questionnaireTimeLimitSeconds: pv.questionnaireTimeLimitSeconds,
-    timerMode: pv.timerMode,
+    timerMode: 'absolute',
     allowResume: pv.allowResume,
     allowMultiDevice: pv.allowMultiDevice,
     retakeMode: pv.retakeMode,

@@ -14,3 +14,11 @@ export type {
 } from './schema/questionnaire';
 export type { ScoringVersion, ScoringRule } from './schema/scoring';
 export type { PolicyVersion } from './schema/policy';
+export type {
+  CandidateContext,
+  Attempt,
+  Session,
+  Answer,
+  AttemptPolicySnapshot,
+} from './schema/execution';
+export * from './repositories/execution';
