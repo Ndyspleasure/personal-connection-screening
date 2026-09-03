@@ -8,6 +8,13 @@
       "when": 1788421785241,
       "tag": "0000_supreme_bill_hollister",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788422596034,
+      "tag": "0001_nosy_firelord",
+      "breakpoints": true
     }
   ]
 }
