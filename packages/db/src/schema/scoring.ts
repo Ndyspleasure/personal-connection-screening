@@ -27,6 +27,7 @@ export const scoringVersion = pgTable(
     passingRule: text('passing_rule').notNull().default('gte'),
     passingScore: integer('passing_score').notNull(),
     status: text('status').notNull().default('DRAFT'),
+    revision: integer('revision').notNull().default(0),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     publishedBy: text('published_by'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

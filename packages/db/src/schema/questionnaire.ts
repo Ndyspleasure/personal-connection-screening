@@ -30,6 +30,8 @@ export const questionnaireVersion = pgTable(
     versionNumber: integer('version_number').notNull(),
     // DRAFT | REVIEW | PUBLISHED | ARCHIVED
     status: text('status').notNull().default('DRAFT'),
+    // Optimistic-concurrency guard for draft edits (Data §57; Func §113).
+    revision: integer('revision').notNull().default(0),
     // Scoring context locked to this questionnaire version (Data §36–37).
     scoringVersionId: uuid('scoring_version_id'),
     publishedAt: timestamp('published_at', { withTimezone: true }),
@@ -65,6 +67,7 @@ export const questionVersion = pgTable(
     description: text('description'),
     required: boolean('required').notNull().default(false),
     status: text('status').notNull().default('DRAFT'),
+    revision: integer('revision').notNull().default(0),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },

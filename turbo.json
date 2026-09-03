@@ -12,7 +12,8 @@
     "lint": {},
     "test": {},
     "test:integration": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["DATABASE_URL", "APP_ENV"]
     },
     "dev": {
       "cache": false,

@@ -35,6 +35,7 @@ export const policyVersion = pgTable(
     maxAttempts: integer('max_attempts').notNull().default(3),
     cooldownSeconds: integer('cooldown_seconds').notNull().default(0),
     status: text('status').notNull().default('DRAFT'),
+    revision: integer('revision').notNull().default(0),
     effectiveAt: timestamp('effective_at', { withTimezone: true }),
     publishedBy: text('published_by'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
