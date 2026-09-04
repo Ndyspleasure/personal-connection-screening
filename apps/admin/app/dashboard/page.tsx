@@ -34,8 +34,10 @@ export default async function DashboardPage() {
           <li>
             <Link href="/content">Content</Link> — profile & public copy
           </li>
-          <li className="muted">Questionnaire builder — next</li>
-          <li className="muted">Scoring & policy — next</li>
+          <li>
+            <Link href="/questionnaires">Questionnaires</Link> — build, score & publish
+          </li>
+          <li className="muted">Scoring & policy managers — next</li>
           <li className="muted">Submissions, audit & integrity — next</li>
         </ul>
       </nav>

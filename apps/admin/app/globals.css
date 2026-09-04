@@ -120,10 +120,22 @@ legend {
   font-size: 0.85rem;
 }
 
+label.option {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+label.option input {
+  width: auto;
+}
+
 .row {
   display: flex;
   gap: 0.75rem;
   align-items: flex-end;
+  flex-wrap: wrap;
 }
 
 .row.spread {

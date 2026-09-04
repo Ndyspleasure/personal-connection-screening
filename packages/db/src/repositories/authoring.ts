@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Database } from '../client';
 import {
   answerOption,
@@ -205,6 +205,23 @@ export async function createQuestionnaire(exec: DbExecutor, input: { slug: strin
 export async function getQuestionnaire(exec: DbExecutor, id: string) {
   const rows = await exec.select().from(questionnaire).where(eq(questionnaire.id, id)).limit(1);
   return rows[0] ?? null;
+}
+
+/** All questionnaires (admin authoring list), newest first. */
+export async function listQuestionnaires(exec: DbExecutor) {
+  return exec.select().from(questionnaire).orderBy(desc(questionnaire.createdAt));
+}
+
+/** All versions of one questionnaire, newest version first (admin list). */
+export async function listQuestionnaireVersionsByQuestionnaire(
+  exec: DbExecutor,
+  questionnaireId: string,
+) {
+  return exec
+    .select()
+    .from(questionnaireVersion)
+    .where(eq(questionnaireVersion.questionnaireId, questionnaireId))
+    .orderBy(desc(questionnaireVersion.versionNumber));
 }
 
 export async function nextQuestionnaireVersionNumber(

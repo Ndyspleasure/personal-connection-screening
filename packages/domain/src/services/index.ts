@@ -8,3 +8,4 @@ export * from './submission-service';
 export * from './admin-auth-service';
 export * from './audit-service';
 export * from './content-admin-service';
+export * from './questionnaire-admin-service';
