@@ -171,6 +171,53 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #2a2b33;
+  white-space: nowrap;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+td button {
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.result-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.result-badge.pass {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+}
+
+.result-badge.fail {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
 .status-line {
   margin-top: 1rem;
   font-size: 0.9rem;

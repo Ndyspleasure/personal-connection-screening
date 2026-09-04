@@ -11,3 +11,4 @@ export * from './content-admin-service';
 export * from './questionnaire-admin-service';
 export * from './scoring-admin-service';
 export * from './policy-admin-service';
+export * from './admin-monitor-service';

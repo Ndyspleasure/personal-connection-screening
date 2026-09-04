@@ -40,7 +40,9 @@ export default async function DashboardPage() {
           <li>
             <Link href="/policy">Policy</Link> — session lifetime, time limit & retake
           </li>
-          <li className="muted">Submissions, audit & integrity — next</li>
+          <li>
+            <Link href="/operations">Operations</Link> — submissions, audit trail & session revoke
+          </li>
         </ul>
       </nav>
       <form action="/auth/signout" method="post">
