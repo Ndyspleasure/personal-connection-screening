@@ -90,3 +90,68 @@ export const publishWithScoringRequestSchema = z
   })
   .strict();
 export type PublishWithScoringRequest = z.infer<typeof publishWithScoringRequestSchema>;
+
+/* --- Scoring test-evaluation (preview) ------------------------------------- */
+
+export const previewScoreRequestSchema = z
+  .object({
+    passingScore: z.number().finite().min(0),
+    rules: z
+      .array(
+        z.object({
+          optionVersionId: z.string().uuid(),
+          points: z.number().finite(),
+          weight: z.number().finite().min(0).optional(),
+        }),
+      )
+      .min(1)
+      .max(512),
+    answers: z
+      .array(
+        z.object({
+          questionVersionId: z.string().uuid(),
+          selectedOptionVersionIds: z.array(z.string().uuid()).max(64),
+        }),
+      )
+      .max(256),
+  })
+  .strict();
+export type PreviewScoreRequest = z.infer<typeof previewScoreRequestSchema>;
+
+/* --- Policy manager -------------------------------------------------------- */
+
+export const retakeMode = z.enum([
+  'NEVER',
+  'ON_NEW_VERSION',
+  'AFTER_COOLDOWN',
+  'ADMIN_APPROVAL',
+  'UNLIMITED',
+]);
+
+export const policyDraftRequestSchema = z
+  .object({
+    sessionLifetimeSeconds: z
+      .number()
+      .int()
+      .min(60)
+      .max(60 * 60 * 24 * 30),
+    questionnaireTimeLimitSeconds: z
+      .number()
+      .int()
+      .min(0)
+      .max(60 * 60 * 24)
+      .nullable()
+      .optional(),
+    allowResume: z.boolean().optional(),
+    allowMultiDevice: z.boolean().optional(),
+    retakeMode: retakeMode.optional(),
+    maxAttempts: z.number().int().min(1).max(100).optional(),
+    cooldownSeconds: z
+      .number()
+      .int()
+      .min(0)
+      .max(60 * 60 * 24 * 30)
+      .optional(),
+  })
+  .strict();
+export type PolicyDraftRequest = z.infer<typeof policyDraftRequestSchema>;

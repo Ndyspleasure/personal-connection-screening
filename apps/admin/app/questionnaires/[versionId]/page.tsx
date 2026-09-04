@@ -59,6 +59,14 @@ export default function BuilderPage({ params }: { params: Promise<{ versionId: s
   const [passingScore, setPassingScore] = useState(1);
   const [points, setPoints] = useState<Record<string, number>>({});
 
+  // Test-evaluation (preview): a sample selected option per choice question.
+  const [sample, setSample] = useState<Record<string, string>>({});
+  const [preview, setPreview] = useState<{
+    score: number;
+    passingScore: number;
+    result: string;
+  } | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     const res = await api<VersionDetail>(`/api/admin/questionnaire-versions/${versionId}`);
@@ -138,6 +146,28 @@ export default function BuilderPage({ params }: { params: Promise<{ versionId: s
     if (!res.ok) return setNotice({ kind: 'error', text: res.error ?? 'Publish failed.' });
     setNotice({ kind: 'ok', text: 'Published — this version is now live and immutable.' });
     await load();
+  }
+
+  async function runPreview() {
+    setNotice(null);
+    const rules = (detail?.questions ?? [])
+      .flatMap((q) => q.options)
+      .map((o) => ({ optionVersionId: o.id, points: Number(points[o.id] ?? 0) }));
+    if (rules.length === 0) {
+      return setNotice({ kind: 'error', text: 'Define at least one scoreable option first.' });
+    }
+    const answers = (detail?.questions ?? [])
+      .filter((q) => q.options.length > 0 && sample[q.questionVersionId])
+      .map((q) => ({
+        questionVersionId: q.questionVersionId,
+        selectedOptionVersionIds: [sample[q.questionVersionId]!],
+      }));
+    const res = await api<{ score: number; passingScore: number; result: string }>(
+      '/api/admin/scoring/preview',
+      { method: 'POST', body: { passingScore: Number(passingScore), rules, answers } },
+    );
+    if (!res.ok) return setNotice({ kind: 'error', text: res.error ?? 'Preview failed.' });
+    setPreview(res.data);
   }
 
   async function archive() {
@@ -317,6 +347,45 @@ export default function BuilderPage({ params }: { params: Promise<{ versionId: s
                 onChange={(e) => setPassingScore(Number(e.target.value))}
               />
             </label>
+
+            {allOptions.length > 0 ? (
+              <fieldset>
+                <legend>Test evaluation (nothing is saved)</legend>
+                <p className="muted small">Pick a sample answer per question, then preview.</p>
+                {detail.questions
+                  .filter((q) => q.options.length > 0)
+                  .map((q) => (
+                    <label className="field" key={q.questionVersionId}>
+                      <span>{q.text}</span>
+                      <select
+                        value={sample[q.questionVersionId] ?? ''}
+                        onChange={(e) =>
+                          setSample((s) => ({ ...s, [q.questionVersionId]: e.target.value }))
+                        }
+                      >
+                        <option value="">— no answer —</option>
+                        {q.options.map((o) => (
+                          <option key={o.id} value={o.id}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                <div className="row">
+                  <button className="ghost" onClick={runPreview}>
+                    Preview result
+                  </button>
+                  {preview ? (
+                    <span className="status-line">
+                      Score {preview.score} / passing {preview.passingScore} →{' '}
+                      <strong>{preview.result}</strong>
+                    </span>
+                  ) : null}
+                </div>
+              </fieldset>
+            ) : null}
+
             <button className="primary" onClick={publish} disabled={allOptions.length === 0}>
               Publish version
             </button>

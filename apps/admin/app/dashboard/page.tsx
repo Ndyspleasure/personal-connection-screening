@@ -37,7 +37,9 @@ export default async function DashboardPage() {
           <li>
             <Link href="/questionnaires">Questionnaires</Link> — build, score & publish
           </li>
-          <li className="muted">Scoring & policy managers — next</li>
+          <li>
+            <Link href="/policy">Policy</Link> — session lifetime, time limit & retake
+          </li>
           <li className="muted">Submissions, audit & integrity — next</li>
         </ul>
       </nav>

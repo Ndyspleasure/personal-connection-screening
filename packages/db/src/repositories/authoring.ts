@@ -123,6 +123,20 @@ export async function createPolicyConfiguration(
   return rows[0]!;
 }
 
+/** All policy configurations (admin), newest first. */
+export async function listPolicyConfigurations(exec: DbExecutor) {
+  return exec.select().from(policyConfiguration).orderBy(desc(policyConfiguration.createdAt));
+}
+
+/** All versions of one policy configuration, newest version first. */
+export async function listPolicyVersionsByConfiguration(exec: DbExecutor, configId: string) {
+  return exec
+    .select()
+    .from(policyVersion)
+    .where(eq(policyVersion.policyConfigurationId, configId))
+    .orderBy(desc(policyVersion.versionNumber));
+}
+
 export async function nextPolicyVersionNumber(exec: DbExecutor, configId: string): Promise<number> {
   const rows = await exec
     .select({ n: sql<number>`coalesce(max(${policyVersion.versionNumber}), 0)` })
