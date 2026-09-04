@@ -250,6 +250,43 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)
 
+  tests/e2e:
+    dependencies:
+      '@pcs/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@pcs/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@pcs/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@pcs/security':
+        specifier: workspace:*
+        version: link:../../packages/security
+      '@pcs/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@pcs/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
+      drizzle-orm:
+        specifier: ^0.38.3
+        version: 0.38.4(@types/react@19.2.18)(postgres@3.4.9)(react@19.2.8)
+      postgres:
+        specifier: ^3.4.5
+        version: 3.4.9
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)
+
 packages:
 
   '@drizzle-team/brocli@0.10.2':

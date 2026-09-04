@@ -63,3 +63,9 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      # Boots the built public app and drives the real HTTP routes end to end.
+      # Uses its own dedicated database (created on the same Postgres service),
+      # so it never touches the integration-test schema above.
+      - name: E2E (public journey)
+        run: pnpm --filter @pcs/e2e test:e2e

@@ -1,5 +1,5 @@
 export { getDb, closeDb, type Database } from './client';
-export { sql, eq, and, or } from 'drizzle-orm';
+export { sql, eq, and, or, inArray } from 'drizzle-orm';
 export * as schema from './schema/index';
 export * from './repositories/content';
 export * from './repositories/authoring';

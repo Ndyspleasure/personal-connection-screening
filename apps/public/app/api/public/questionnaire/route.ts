@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getDb, schema, sql } from '@pcs/db';
+import { getDb, inArray, schema, sql } from '@pcs/db';
 import { requireCandidateActor, toErrorResponse } from '../../../../lib/route-helpers';
 
 export const runtime = 'nodejs';
@@ -47,7 +47,7 @@ export async function GET(_req: NextRequest) {
               position: schema.answerOptionVersion.position,
             })
             .from(schema.answerOptionVersion)
-            .where(sql`question_version_id = ANY (${questionIds})`)
+            .where(inArray(schema.answerOptionVersion.questionVersionId, questionIds))
             .orderBy(sql`${schema.answerOptionVersion.position} asc`);
 
     const byQuestion = new Map<string, { id: string; value: string; label: string }[]>();

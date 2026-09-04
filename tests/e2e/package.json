@@ -1,0 +1,26 @@
+{
+  "name": "@pcs/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@pcs/config": "workspace:*",
+    "@pcs/db": "workspace:*",
+    "@pcs/domain": "workspace:*",
+    "@pcs/security": "workspace:*",
+    "@pcs/types": "workspace:*",
+    "@pcs/validation": "workspace:*",
+    "drizzle-orm": "^0.38.3",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}
