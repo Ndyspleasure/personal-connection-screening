@@ -43,5 +43,28 @@ export const auditEvent = pgTable('audit_event', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * IntegrityService findings (Data §87–90, §100–105, §113; Func §98; Sec §38).
+ * Impossible/inconsistent states detected by request-time checks or the
+ * scheduled scan. Findings are RECORDED, never silently repaired (INT-02), and
+ * are append-only at the DB level (companion trigger migration).
+ */
+export const integrityFinding = pgTable('integrity_finding', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  // Groups all findings produced by one scan run (null for request-time checks).
+  scanId: uuid('scan_id'),
+  kind: text('kind').notNull(), // e.g. PASS_BELOW_PASSING, RESULT_WITHOUT_VERIFICATION
+  severity: text('severity').notNull().default('ERROR'),
+  entityType: text('entity_type'),
+  entityId: text('entity_id'),
+  detail: jsonb('detail')
+    .notNull()
+    .default(sql`'{}'::jsonb`),
+  status: text('status').notNull().default('OPEN'),
+  detectedAt: timestamp('detected_at', { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type AdminActorRecord = typeof adminActor.$inferSelect;
 export type AuditEventRecord = typeof auditEvent.$inferSelect;
+export type IntegrityFindingRecord = typeof integrityFinding.$inferSelect;

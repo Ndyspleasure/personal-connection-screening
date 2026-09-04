@@ -28,4 +28,9 @@ export * from './repositories/finalization';
 export * from './repositories/governance';
 export * from './repositories/content-admin';
 export * from './repositories/monitor';
-export type { AdminActorRecord, AuditEventRecord } from './schema/governance';
+export * from './repositories/integrity';
+export type {
+  AdminActorRecord,
+  AuditEventRecord,
+  IntegrityFindingRecord,
+} from './schema/governance';

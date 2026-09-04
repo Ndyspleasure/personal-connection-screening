@@ -6,5 +6,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/health).*)'],
+  // `api/cron` authenticates via CRON_SECRET, not a Supabase session, so it must
+  // bypass the auth-redirect middleware (it has no user cookie).
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/health|api/cron).*)'],
 };

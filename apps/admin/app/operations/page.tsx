@@ -34,6 +34,14 @@ interface AuditRow {
   entityType: string | null;
   summary: string | null;
 }
+interface FindingRow {
+  id: string;
+  kind: string;
+  severity: string;
+  entityType: string | null;
+  entityId: string | null;
+  detectedAt: string | null;
+}
 
 const short = (ref: string) => (ref.length > 16 ? `${ref.slice(0, 14)}…` : ref);
 const when = (iso: string | null) => (iso ? iso.replace('T', ' ').slice(0, 19) : '—');
@@ -44,16 +52,18 @@ export default function OperationsPage() {
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [audit, setAudit] = useState<AuditRow[]>([]);
+  const [findings, setFindings] = useState<FindingRow[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [subs, sess, aud] = await Promise.all([
+    const [subs, sess, aud, integ] = await Promise.all([
       api<{ submissions: SubmissionRow[] }>('/api/admin/submissions'),
       api<{ sessions: SessionRow[] }>('/api/admin/sessions'),
       api<{ events: AuditRow[] }>('/api/admin/audit'),
+      api<{ findings: FindingRow[] }>('/api/admin/integrity'),
     ]);
-    if (!subs.ok || !sess.ok || !aud.ok) {
-      const first = [subs, sess, aud].find((r) => !r.ok);
+    if (!subs.ok || !sess.ok || !aud.ok || !integ.ok) {
+      const first = [subs, sess, aud, integ].find((r) => !r.ok);
       setNotice({
         kind: 'error',
         text:
@@ -67,6 +77,7 @@ export default function OperationsPage() {
     setSubmissions(subs.data?.submissions ?? []);
     setSessions(sess.data?.sessions ?? []);
     setAudit(aud.data?.events ?? []);
+    setFindings(integ.data?.findings ?? []);
     setLoading(false);
   }, []);
 
@@ -79,6 +90,19 @@ export default function OperationsPage() {
     const res = await api(`/api/admin/sessions/${ref}/revoke`, { method: 'POST' });
     if (!res.ok) return setNotice({ kind: 'error', text: res.error ?? 'Revoke failed.' });
     setNotice({ kind: 'ok', text: 'Session revoked.' });
+    await load();
+  }
+
+  async function runScan() {
+    setNotice(null);
+    const res = await api<{ findingCount: number }>('/api/admin/integrity/scan', {
+      method: 'POST',
+    });
+    if (!res.ok) return setNotice({ kind: 'error', text: res.error ?? 'Scan failed.' });
+    setNotice({
+      kind: res.data && res.data.findingCount > 0 ? 'error' : 'ok',
+      text: `Integrity scan complete: ${res.data?.findingCount ?? 0} finding(s).`,
+    });
     await load();
   }
 
@@ -160,6 +184,44 @@ export default function OperationsPage() {
                         <td>{s.questionnaireLabel}</td>
                         <td>{s.verificationStatus ?? '—'}</td>
                         <td>{when(s.submittedAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          <section className="panel">
+            <div className="row spread">
+              <h2>Integrity</h2>
+              <button className="ghost" onClick={runScan}>
+                Run scan now
+              </button>
+            </div>
+            {findings.length === 0 ? (
+              <p className="muted">No integrity findings recorded.</p>
+            ) : (
+              <div className="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Detected</th>
+                      <th>Kind</th>
+                      <th>Severity</th>
+                      <th>Entity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {findings.map((f) => (
+                      <tr key={f.id}>
+                        <td>{when(f.detectedAt)}</td>
+                        <td>{f.kind}</td>
+                        <td>{f.severity}</td>
+                        <td title={f.entityId ?? ''}>
+                          {f.entityType ?? '—'}
+                          {f.entityId ? ` ${short(f.entityId)}` : ''}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

@@ -71,6 +71,20 @@
       "when": 1788531066373,
       "tag": "0009_audit_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788565644889,
+      "tag": "0010_big_randall",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788565651586,
+      "tag": "0011_integrity_finding_append_only",
+      "breakpoints": true
     }
   ]
 }
