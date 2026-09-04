@@ -25,3 +25,6 @@ export type { Submission, Evaluation, Result, Verification } from './schema/fina
 export * from './repositories/execution';
 export * from './repositories/answers';
 export * from './repositories/finalization';
+export * from './repositories/governance';
+export * from './repositories/content-admin';
+export type { AdminActorRecord, AuditEventRecord } from './schema/governance';

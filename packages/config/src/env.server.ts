@@ -24,6 +24,9 @@ const serverEnvSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.string().optional().default(''),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional().default(''),
   CRON_SECRET: z.string().optional().default(''),
+  // Email of the very first OWNER, self-provisioned on first sign-in when the
+  // admin_actor allow-list is still empty. Later admins are added via the CMS.
+  ADMIN_BOOTSTRAP_EMAIL: z.string().optional().default(''),
   PUBLIC_ALLOWED_ORIGINS: z.array(z.string()).default([]),
   ADMIN_ALLOWED_ORIGINS: z.array(z.string()).default([]),
 });
@@ -44,6 +47,7 @@ export function getServerEnv(): ServerEnv {
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     CRON_SECRET: process.env.CRON_SECRET,
+    ADMIN_BOOTSTRAP_EMAIL: process.env.ADMIN_BOOTSTRAP_EMAIL,
     PUBLIC_ALLOWED_ORIGINS: csv(process.env.PUBLIC_ALLOWED_ORIGINS),
     ADMIN_ALLOWED_ORIGINS: csv(process.env.ADMIN_ALLOWED_ORIGINS),
   });

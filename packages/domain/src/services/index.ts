@@ -5,3 +5,6 @@ export * from './questionnaire-service';
 export * from './session-service';
 export * from './answer-service';
 export * from './submission-service';
+export * from './admin-auth-service';
+export * from './audit-service';
+export * from './content-admin-service';

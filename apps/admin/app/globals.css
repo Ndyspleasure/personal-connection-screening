@@ -34,22 +34,101 @@ main {
   padding: 4rem 1.5rem;
 }
 
+main.wide {
+  max-width: 48rem;
+}
+
 .muted {
   color: var(--muted);
 }
 
-label {
-  display: block;
-  margin: 0.75rem 0 0.25rem;
+.small {
+  font-size: 0.85rem;
 }
 
-input {
+.crumbs {
+  margin: 0 0 1rem;
+}
+
+.crumbs a,
+.nav-list a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.75rem;
+}
+
+.panel {
+  background: #16171d;
+  border: 1px solid #2a2b33;
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  margin: 1.25rem 0;
+}
+
+.nav-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  line-height: 1.9;
+}
+
+label.field {
+  display: block;
+  margin: 0.75rem 0 0;
+}
+
+label.field > span {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+label.field.inline {
+  flex: 1;
+}
+
+input,
+textarea,
+select {
   width: 100%;
   padding: 0.5rem 0.65rem;
   border-radius: 0.4rem;
   border: 1px solid #3f3f46;
   background: #18181b;
   color: var(--fg);
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+fieldset {
+  border: 1px solid #2a2b33;
+  border-radius: 0.6rem;
+  padding: 0.5rem 1.1rem 1.1rem;
+  margin: 1rem 0;
+}
+
+legend {
+  padding: 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.row.spread {
+  justify-content: space-between;
+  align-items: center;
 }
 
 button {
@@ -61,4 +140,34 @@ button {
   color: #0b0c10;
   font-weight: 600;
   cursor: pointer;
+}
+
+button.ghost {
+  background: transparent;
+  border: 1px solid #3f3f46;
+  color: var(--fg);
+}
+
+button.danger {
+  background: transparent;
+  border: 1px solid #7f1d1d;
+  color: #f87171;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status-line {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.status-line.ok {
+  color: #34d399;
+}
+
+.status-line.error {
+  color: #f87171;
 }

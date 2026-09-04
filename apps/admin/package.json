@@ -17,6 +17,7 @@
     "@pcs/security": "workspace:*",
     "@pcs/types": "workspace:*",
     "@pcs/ui": "workspace:*",
+    "@pcs/validation": "workspace:*",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
     "next": "^15.1.4",

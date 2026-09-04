@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { isSupabaseConfigured } from '../../lib/supabase/config';
 import { createClient } from '../../lib/supabase/server';
@@ -27,10 +28,17 @@ export default async function DashboardPage() {
     <main>
       <h1>Admin dashboard</h1>
       <p>Signed in as {user.email}.</p>
-      <p className="muted">
-        CMS modules — content, questionnaire builder, scoring, policy, submissions, audit, and
-        integrity — arrive in Phase 5.
-      </p>
+      <nav className="panel">
+        <h2>CMS modules</h2>
+        <ul className="nav-list">
+          <li>
+            <Link href="/content">Content</Link> — profile & public copy
+          </li>
+          <li className="muted">Questionnaire builder — next</li>
+          <li className="muted">Scoring & policy — next</li>
+          <li className="muted">Submissions, audit & integrity — next</li>
+        </ul>
+      </nav>
       <form action="/auth/signout" method="post">
         <button type="submit">Sign out</button>
       </form>

@@ -57,6 +57,20 @@
       "when": 1788444857985,
       "tag": "0007_finalization_immutability",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788531053197,
+      "tag": "0008_overrated_mathemanic",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788531066373,
+      "tag": "0009_audit_append_only",
+      "breakpoints": true
     }
   ]
 }
