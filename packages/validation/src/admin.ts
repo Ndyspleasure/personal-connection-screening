@@ -128,6 +128,50 @@ export const retakeMode = z.enum([
   'UNLIMITED',
 ]);
 
+/* --- Access codes (gated sessions) ----------------------------------------- */
+
+const codeStatus = z.enum(['ACTIVE', 'DISABLED', 'REVOKED']);
+
+/** POST /api/admin/access-codes — create a code for a session kind. */
+export const accessCodeCreateRequestSchema = z
+  .object({
+    sessionKindId: z.string().uuid(),
+    // Optional explicit code; omit to have the server generate one.
+    code: z.string().min(4).max(128).optional(),
+    label: z.string().max(200).nullable().optional(),
+    // Absolute expiry as an ISO-8601 timestamp; null = never expires.
+    expiresAt: z.string().datetime({ offset: true }).nullable().optional(),
+    // Usage cap; null = unlimited.
+    maxUses: z.number().int().min(1).max(1_000_000).nullable().optional(),
+  })
+  .strict();
+export type AccessCodeCreateRequest = z.infer<typeof accessCodeCreateRequestSchema>;
+
+/** PATCH /api/admin/access-codes/[id] — update status / expiry / cap / label. */
+export const accessCodeUpdateRequestSchema = z
+  .object({
+    status: codeStatus.optional(),
+    label: z.string().max(200).nullable().optional(),
+    expiresAt: z.string().datetime({ offset: true }).nullable().optional(),
+    maxUses: z.number().int().min(1).max(1_000_000).nullable().optional(),
+  })
+  .strict()
+  .refine((v) => Object.keys(v).length > 0, { message: 'no fields to update' });
+export type AccessCodeUpdateRequest = z.infer<typeof accessCodeUpdateRequestSchema>;
+
+/** PATCH /api/admin/session-kinds/[id] — light CMS edits to a session card. */
+export const sessionKindUpdateRequestSchema = z
+  .object({
+    name: z.string().min(1).max(200).optional(),
+    description: z.string().max(2000).nullable().optional(),
+    tagline: z.string().max(400).nullable().optional(),
+    displayOrder: z.number().int().min(0).max(10_000).optional(),
+    status: z.enum(['ACTIVE', 'HIDDEN']).optional(),
+  })
+  .strict()
+  .refine((v) => Object.keys(v).length > 0, { message: 'no fields to update' });
+export type SessionKindUpdateRequest = z.infer<typeof sessionKindUpdateRequestSchema>;
+
 export const policyDraftRequestSchema = z
   .object({
     sessionLifetimeSeconds: z

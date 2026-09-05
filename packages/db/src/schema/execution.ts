@@ -14,6 +14,7 @@ import { sql } from 'drizzle-orm';
 import { policyVersion } from './policy';
 import { questionnaireVersion, questionVersion } from './questionnaire';
 import { scoringVersion } from './scoring';
+import { sessionKind } from './sessions';
 
 /**
  * Execution domain (Data & State Model §21–32, §45).
@@ -44,6 +45,11 @@ export const attempt = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     publicRef: text('public_ref').notNull().unique(),
     candidateContextId: uuid('candidate_context_id').references(() => candidateContext.id),
+
+    // Which CMS session this attempt belongs to (Two-Session phase). Nullable
+    // for attempts created before session kinds existed; backfilled to the
+    // default (perkenalan) kind in the same migration.
+    sessionKindId: uuid('session_kind_id').references(() => sessionKind.id),
 
     // Version-lock triple (Data §46, INV-D07). All three are frozen at
     // creation time. New CMS publishes never mutate these references.
@@ -79,6 +85,7 @@ export const attempt = pgTable(
     // an index there speeds up eligibility checks.
     byQnvIdx: index('attempt_questionnaire_version_idx').on(t.questionnaireVersionId),
     byCandidateIdx: index('attempt_candidate_idx').on(t.candidateContextId),
+    bySessionKindIdx: index('attempt_session_kind_idx').on(t.sessionKindId),
   }),
 );
 
