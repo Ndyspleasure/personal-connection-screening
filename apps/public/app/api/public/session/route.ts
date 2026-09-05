@@ -10,6 +10,7 @@ import {
   checkRateLimit,
   ensureOriginAllowed,
   parseJson,
+  recordCandidateEvent,
   requestIp,
   requireCandidateActor,
   setSessionCookie,
@@ -60,6 +61,19 @@ export async function POST(req: NextRequest) {
     const trio = await resolveCurrentPublished();
     const started = await sessionService.start(getDb(), getServerEnv().SESSION_SECRET, trio);
     await setSessionCookie(started.rawSessionToken, started.session.expiresAt);
+    await recordCandidateEvent(
+      {
+        type: 'PUBLIC_CANDIDATE',
+        sessionRef: started.session.publicRef,
+        attemptId: started.attempt.id,
+      },
+      {
+        action: 'public.session.started',
+        entityType: 'attempt',
+        entityId: started.attempt.publicRef,
+        summary: 'candidate started a new attempt',
+      },
+    );
     return NextResponse.json(
       {
         sessionRef: started.session.publicRef,

@@ -6,6 +6,7 @@ import {
   checkRateLimit,
   ensureOriginAllowed,
   parseJson,
+  recordCandidateEvent,
   requireCandidateActor,
   toErrorResponse,
 } from '../../../../lib/route-helpers';
@@ -28,6 +29,14 @@ export async function POST(req: NextRequest) {
     const finalized = await submissionService.finalize(getDb(), actor, {
       idempotencyKey: body.idempotencyKey ?? null,
     });
+    if (finalized.wasFirstFinalization) {
+      await recordCandidateEvent(actor, {
+        action: 'public.submission.finalized',
+        entityType: 'result',
+        entityId: finalized.result.publicRef,
+        summary: `submission finalized (${finalized.result.resultType})`,
+      });
+    }
     const view = toResultPublicView({
       result: finalized.result,
       verification: finalized.verification,

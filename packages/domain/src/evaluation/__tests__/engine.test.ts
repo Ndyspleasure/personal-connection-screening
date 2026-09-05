@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { AppError } from '@pcs/security';
-import { buildOptionScores, evaluate, type EvaluationAnswer, type ScoringContext } from '../engine';
+import {
+  assertConsistentOutcome,
+  buildOptionScores,
+  evaluate,
+  type EvaluationAnswer,
+  type ScoringContext,
+} from '../engine';
 
 function context(
   passingScore: number,
@@ -106,5 +112,55 @@ describe('buildOptionScores', () => {
     ]);
     expect(map.get('a')).toEqual({ points: 10, weight: 2 });
     expect(map.size).toBe(1);
+  });
+});
+
+describe('assertConsistentOutcome (request-time invariant)', () => {
+  it('accepts consistent PASS/FAIL outcomes at the boundary', () => {
+    expect(() =>
+      assertConsistentOutcome({ score: 10, passingScore: 10, result: 'PASS' }),
+    ).not.toThrow();
+    expect(() =>
+      assertConsistentOutcome({ score: 9, passingScore: 10, result: 'FAIL' }),
+    ).not.toThrow();
+  });
+
+  it('rejects a PASS below the passing score (never persists an impossible state)', () => {
+    expect(() => assertConsistentOutcome({ score: 5, passingScore: 70, result: 'PASS' })).toThrow(
+      AppError,
+    );
+  });
+
+  it('rejects a FAIL at or above the passing score', () => {
+    expect(() => assertConsistentOutcome({ score: 80, passingScore: 70, result: 'FAIL' })).toThrow(
+      AppError,
+    );
+  });
+
+  it('every evaluate() result is self-consistent', () => {
+    for (const [passing, points, sel] of [
+      [70, { a: 40, b: 40 }, ['a', 'b']],
+      [70, { a: 40, b: 40 }, ['a']],
+      [0, {}, []],
+    ] as const) {
+      const ctx: ScoringContext = {
+        scoringVersionId: 'sv',
+        passingScore: passing,
+        passingRule: 'gte',
+        formulaType: 'weighted_sum',
+        optionScores: buildOptionScores(
+          Object.entries(points).map(([optionVersionId, p]) => ({
+            optionVersionId,
+            points: p,
+            weight: 1,
+          })),
+        ),
+      };
+      const answers: EvaluationAnswer[] = [
+        { questionVersionId: 'q', selectedOptionVersionIds: [...sel] },
+      ];
+      const outcome = evaluate(answers, ctx);
+      expect(() => assertConsistentOutcome(outcome)).not.toThrow();
+    }
   });
 });

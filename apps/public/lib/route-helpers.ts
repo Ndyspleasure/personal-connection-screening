@@ -1,9 +1,10 @@
+import { randomUUID } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 import { RATE_LIMITS, publicEnv, type RateLimitOperation } from '@pcs/config';
 import { getServerEnv } from '@pcs/config/server';
 import { getDb, type Database } from '@pcs/db';
-import { sessionService, type CandidateActor } from '@pcs/domain';
+import { auditService, sessionService, type CandidateActor } from '@pcs/domain';
 import {
   AppError,
   SESSION_COOKIE_NAME,
@@ -149,6 +150,29 @@ export async function requireCandidateActor(): Promise<{
     attempt: resumed.attempt,
     session: resumed.session,
   };
+}
+
+/**
+ * Best-effort candidate-side audit (Data §40, §79–80; Tech §56). Records a
+ * critical candidate event with a fresh correlation id. Wrapped so an audit
+ * write hiccup can NEVER turn a candidate's successful action into a failure —
+ * the candidate path must not depend on the audit trail's availability.
+ */
+export async function recordCandidateEvent(
+  actor: CandidateActor,
+  input: {
+    action: string;
+    entityType?: string | null;
+    entityId?: string | null;
+    summary?: string | null;
+    metadata?: Record<string, unknown>;
+  },
+): Promise<void> {
+  try {
+    await auditService.record(getDb(), { correlationId: randomUUID(), actor }, input);
+  } catch {
+    // Intentionally swallowed — see doc comment.
+  }
 }
 
 /** Apply a rate limit keyed by session/ip; throws RATE_LIMITED on breach. */

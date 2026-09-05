@@ -69,7 +69,27 @@ export function evaluate(
   }
 
   const result: ResultType = score >= context.passingScore ? 'PASS' : 'FAIL';
-  return { score, passingScore: context.passingScore, result };
+  const outcome: EvaluationOutcome = { score, passingScore: context.passingScore, result };
+  assertConsistentOutcome(outcome);
+  return outcome;
+}
+
+/**
+ * Request-time integrity invariant (Data §100, §113; INT-01). A PASS must have a
+ * score at or above the passing threshold, and a FAIL must be below it — the
+ * exact impossible states the scheduled scan looks for (Brief §38). This is
+ * defense-in-depth: it cannot fire given the construction above, but it hard-
+ * stops any future regression BEFORE an inconsistent outcome is ever persisted,
+ * raising EVALUATION_ERROR rather than writing a corrupt result.
+ */
+export function assertConsistentOutcome(outcome: EvaluationOutcome): void {
+  const shouldPass = outcome.score >= outcome.passingScore;
+  if ((outcome.result === 'PASS') !== shouldPass) {
+    throw new AppError(
+      'EVALUATION_ERROR',
+      `inconsistent outcome: ${outcome.result} at score ${outcome.score}/${outcome.passingScore}`,
+    );
+  }
 }
 
 /** Build a scoring context's option-score map from raw scoring-rule rows. */

@@ -24,7 +24,12 @@ import { AppError, generatePublicRef } from '@pcs/security';
 import type { ResultPublicView, VerificationPublicView } from '@pcs/types';
 import type { Actor, CandidateActor } from '../authz';
 import { assertAdmin } from './errors';
-import { buildOptionScores, evaluate, type EvaluationAnswer } from '../evaluation/engine';
+import {
+  assertConsistentOutcome,
+  buildOptionScores,
+  evaluate,
+  type EvaluationAnswer,
+} from '../evaluation/engine';
 
 /**
  * SubmissionService — the atomic finalize + evaluate + result + verification.
@@ -250,6 +255,10 @@ export const submissionService = {
         // Evaluation errors are TECHNICAL; never become FAIL (Master §17, AC-15).
         throw err instanceof AppError ? err : new AppError('EVALUATION_ERROR');
       }
+
+      // Request-time integrity invariant at the persistence boundary (Data §100,
+      // §113; INT-01): refuse to write an impossible PASS/FAIL vs score outcome.
+      assertConsistentOutcome(evaluated);
 
       const inputSnapshot = {
         answers: evalAnswers,
