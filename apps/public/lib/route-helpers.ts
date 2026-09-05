@@ -157,6 +157,32 @@ export async function requireCandidateActor(): Promise<{
 }
 
 /**
+ * Best-effort resume of the current browser session from its cookie. Returns
+ * the attempt+session when a valid ACTIVE/COMPLETED session exists, or null for
+ * any missing/invalid/expired/revoked state (never throws). Used by the
+ * two-session routes to make "start" idempotent per session kind.
+ */
+export async function tryResumeSession(): Promise<{
+  attempt: Awaited<ReturnType<typeof sessionService.resumeByToken>>['attempt'];
+  session: Awaited<ReturnType<typeof sessionService.resumeByToken>>['session'];
+} | null> {
+  const jar = await cookies();
+  const raw = jar.get(SESSION_COOKIE_NAME)?.value;
+  if (!raw) return null;
+  try {
+    const env = getServerEnv();
+    const { attempt, session } = await sessionService.resumeByToken(
+      getDb(),
+      env.SESSION_SECRET,
+      raw,
+    );
+    return { attempt, session };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Best-effort candidate-side audit (Data §40, §79–80; Tech §56). Records a
  * critical candidate event with a fresh correlation id. Wrapped so an audit
  * write hiccup can NEVER turn a candidate's successful action into a failure —

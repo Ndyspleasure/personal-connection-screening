@@ -1,9 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { cookies } from 'next/headers';
 import { getServerEnv } from '@pcs/config/server';
-import { SESSION_COOKIE_NAME } from '@pcs/security';
-import { sessionService } from '@pcs/domain';
-import { getDb } from '@pcs/db';
+import { AppError } from '@pcs/security';
+import { sessionCatalogService, sessionService } from '@pcs/domain';
+import { getDb, type SessionKind } from '@pcs/db';
 import { startSessionRequestSchema } from '@pcs/validation';
 import { resolveCurrentPublished } from '../../../../lib/current-published';
 import {
@@ -15,51 +14,70 @@ import {
   requireCandidateActor,
   setSessionCookie,
   toErrorResponse,
+  tryResumeSession,
 } from '../../../../lib/route-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/public/session — Start a new attempt.
+ * POST /api/public/session — Start a new attempt for a chosen session.
  *
- * Idempotent per browser: if a valid session cookie already resolves to an
- * ACTIVE attempt, we return that attempt reference instead of creating a
- * second (Master §7, §7.2; Functional §7). If the cookie is expired/revoked
- * we return the appropriate safe error and DO NOT auto-claim a new one.
+ * `sessionKey` selects the CMS session (Two-Session phase); omitted → the
+ * default open session (lowest-ordered ACTIVE, non-gated). If no session kinds
+ * are configured yet, we fall back to the single current published screening so
+ * the flow keeps working during rollout.
+ *
+ * Idempotent per browser AND per session kind: a valid cookie that already
+ * resolves to an ACTIVE attempt of the SAME kind returns that attempt; choosing
+ * a different session starts fresh (Master §7, §7.2). Gated sessions cannot be
+ * started here — they go through POST /api/public/access-code.
  */
 export async function POST(req: NextRequest) {
   try {
     ensureOriginAllowed(req);
     await checkRateLimit('start', `ip:${requestIp(req)}`);
-    await parseJson(req, startSessionRequestSchema);
+    const body = await parseJson(req, startSessionRequestSchema);
+    const db = getDb();
 
-    // Cookie-first idempotency (Master §7.2). A valid cookie -> return same attempt.
-    const jar = await cookies();
-    const existing = jar.get(SESSION_COOKIE_NAME)?.value;
-    if (existing) {
-      try {
-        const { attempt, session } = await sessionService.resumeByToken(
-          getDb(),
-          getServerEnv().SESSION_SECRET,
-          existing,
-        );
-        if (attempt.status === 'ACTIVE') {
-          return NextResponse.json({
-            sessionRef: session.publicRef,
-            attemptRef: attempt.publicRef,
-            expiresAt: session.expiresAt.toISOString(),
-            questionnaireDeadline: attempt.questionnaireDeadline?.toISOString() ?? null,
-            reused: true,
-          });
-        }
-      } catch {
-        // Fall through — either invalid/expired/revoked; issue a fresh session below.
+    // Resolve the requested session kind (or the default open one, if any).
+    let kind: SessionKind | null = null;
+    if (body.sessionKey) {
+      kind = await sessionCatalogService.resolveByKey(db, body.sessionKey);
+    } else {
+      const kinds = await sessionCatalogService.listActive(db);
+      kind = kinds.find((k) => !k.requiresAccessCode) ?? null;
+    }
+
+    // Kind-aware cookie idempotency: reuse an ACTIVE attempt only if it belongs
+    // to the same kind (matching legacy null-kind attempts on the fallback path).
+    const resumed = await tryResumeSession();
+    if (resumed && resumed.attempt.status === 'ACTIVE') {
+      const sameKind = kind
+        ? resumed.attempt.sessionKindId === kind.id
+        : resumed.attempt.sessionKindId == null;
+      if (sameKind) {
+        return NextResponse.json({
+          sessionRef: resumed.session.publicRef,
+          attemptRef: resumed.attempt.publicRef,
+          expiresAt: resumed.session.expiresAt.toISOString(),
+          questionnaireDeadline: resumed.attempt.questionnaireDeadline?.toISOString() ?? null,
+          reused: true,
+        });
       }
     }
 
-    const trio = await resolveCurrentPublished();
-    const started = await sessionService.start(getDb(), getServerEnv().SESSION_SECRET, trio);
+    // Gated sessions must be opened via the access-code endpoint.
+    if (kind?.requiresAccessCode) throw new AppError('ACCESS_REQUIRED');
+
+    const trio = kind
+      ? await sessionCatalogService.resolvePublishedForKind(db, kind)
+      : await resolveCurrentPublished(db);
+
+    const started = await sessionService.start(db, getServerEnv().SESSION_SECRET, {
+      ...trio,
+      sessionKindId: kind?.id ?? null,
+    });
     await setSessionCookie(started.rawSessionToken, started.session.expiresAt);
     await recordCandidateEvent(
       {
@@ -71,7 +89,8 @@ export async function POST(req: NextRequest) {
         action: 'public.session.started',
         entityType: 'attempt',
         entityId: started.attempt.publicRef,
-        summary: 'candidate started a new attempt',
+        summary: `candidate started a new attempt${kind ? ` (${kind.key})` : ''}`,
+        metadata: kind ? { sessionKey: kind.key } : {},
       },
     );
     return NextResponse.json(
