@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AppError,
   InMemoryRateLimiter,
@@ -7,6 +7,8 @@ import {
   generatePublicRef,
   generateSessionToken,
   isRequestOriginValid,
+  logServerError,
+  redact,
   referenceKindOf,
   safeEqualHex,
   sessionCookieOptions,
@@ -133,5 +135,48 @@ describe('in-memory rate limiter', () => {
     expect((await rl.limit('a')).success).toBe(true);
     expect((await rl.limit('b')).success).toBe(true);
     expect((await rl.limit('a')).success).toBe(false);
+  });
+});
+
+describe('structured logging', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('redact masks sensitive keys recursively, leaves the rest intact', () => {
+    const out = redact({
+      sessionToken: 'abc',
+      nested: { authorization: 'Bearer x', keep: 1 },
+      list: [{ secret: 's' }, { ok: true }],
+      plain: 'value',
+    }) as Record<string, unknown>;
+    expect(out.sessionToken).toBe('[redacted]');
+    expect((out.nested as Record<string, unknown>).authorization).toBe('[redacted]');
+    expect((out.nested as Record<string, unknown>).keep).toBe(1);
+    expect((out.list as Record<string, unknown>[])[0]!.secret).toBe('[redacted]');
+    expect(out.plain).toBe('value');
+  });
+
+  it('logs an AppError compactly by code (no stack)', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    logServerError(new AppError('INTEGRITY_ERROR', 'boom'), { correlationId: 'cid-1' });
+    const record = JSON.parse(spy.mock.calls[0]![0] as string);
+    expect(record.code).toBe('INTEGRITY_ERROR');
+    expect(record.correlationId).toBe('cid-1');
+    expect(record.stack).toBeUndefined();
+  });
+
+  it('logs an unexpected error as UNEXPECTED with a stack', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    logServerError(new Error('kaboom'));
+    const record = JSON.parse(spy.mock.calls[0]![0] as string);
+    expect(record.code).toBe('UNEXPECTED');
+    expect(record.message).toBe('kaboom');
+    expect(typeof record.stack).toBe('string');
+  });
+
+  it('redacts sensitive context passed to the logger', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    logServerError(new AppError('NOT_AUTHORIZED'), { sessionToken: 'leak-me' });
+    const record = JSON.parse(spy.mock.calls[0]![0] as string);
+    expect(record.sessionToken).toBe('[redacted]');
   });
 });

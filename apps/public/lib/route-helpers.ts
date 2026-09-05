@@ -11,6 +11,7 @@ import {
   clearedSessionCookieOptions,
   createRateLimiter,
   isRequestOriginValid,
+  logServerError,
   sessionCookieOptions,
   toPublicError,
   type RateLimiter,
@@ -61,6 +62,9 @@ export function requestIp(req: NextRequest): string {
 /** Uniform JSON error response with the safe body from @pcs/security. */
 export function toErrorResponse(err: unknown): NextResponse {
   const pub = toPublicError(err);
+  // Server-side observability for unexpected failures only; 4xx are expected
+  // control flow and stay quiet (Tech §55).
+  if (pub.status >= 500) logServerError(err, { correlationId: randomUUID(), app: 'public' });
   return NextResponse.json(pub.body, { status: pub.status });
 }
 

@@ -11,16 +11,28 @@ manage content, questionnaires, scoring, and policy.
 
 ## Status
 
-Bootstrap in progress. Implemented so far:
+Feature-complete for MVP. Implemented:
 
-- **Phase 1 — Foundation:** pnpm + Turborepo monorepo, two Next.js apps, shared
-  packages, Drizzle + first migration (content domain), CI.
-- **Phase 2 — Security foundation:** opaque IDs & session-token primitives,
-  cookie/CSRF helpers, safe error model, rate limiting (Upstash), admin auth
-  wiring (Supabase Auth), server/public secret boundary.
+- **Phase 1–2 — Foundation & security:** monorepo, two Next.js apps, shared
+  packages, opaque IDs & session-token primitives, cookie/CSRF helpers, safe
+  error model, rate limiting (Upstash), admin auth (Supabase), secret boundary.
+- **Phase 3 — Core domain:** versioned questionnaire / question / scoring /
+  policy, the publish workflow, and DB-level immutability guards.
+- **Phase 4 — Candidate flow:** session → answer → submit → evaluate → result →
+  verification, all server-authoritative, with a public HTTP E2E.
+- **Phase 5 — Admin CMS:** content editor, questionnaire builder (with scoring
+  test-evaluation), policy manager, and operations (submission monitor, audit
+  trail, session revoke) — nothing hardcoded.
+- **Phase 6 — Reliability:** IntegrityService (scheduled scan + request-time
+  invariant checks, never silent repair), append-only audit with correlation
+  ids, idempotency/recovery, and one-final-submission concurrency.
+- **Phase 7 — Testing & hardening:** unit + integration + E2E + a security
+  suite, a [scenario matrix](./docs/scenario-matrix.md), structured logging, and
+  a [deployment guide](./docs/deployment.md) with a production checklist.
 
-Remaining phases (core domain, candidate flow, CMS, reliability, testing) are
-tracked in [`docs/00-repository-audit-and-implementation-plan.md`](./docs/00-repository-audit-and-implementation-plan.md).
+The full plan lives in
+[`docs/00-repository-audit-and-implementation-plan.md`](./docs/00-repository-audit-and-implementation-plan.md);
+per-criterion test coverage is in [`docs/scenario-matrix.md`](./docs/scenario-matrix.md).
 
 ## Repository layout
 

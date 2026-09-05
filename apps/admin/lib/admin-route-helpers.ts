@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { getServerEnv } from '@pcs/config/server';
 import { getDb, type Database } from '@pcs/db';
 import { adminAuthService, type AdminActor } from '@pcs/domain';
-import { AppError, isRequestOriginValid, toPublicError } from '@pcs/security';
+import { AppError, isRequestOriginValid, logServerError, toPublicError } from '@pcs/security';
 import { safeParse } from '@pcs/validation';
 import { createClient } from './supabase/server';
 import { isSupabaseConfigured } from './supabase/config';
@@ -30,6 +30,7 @@ export function newCorrelationId(): string {
 
 export function toErrorResponse(err: unknown): NextResponse {
   const pub = toPublicError(err);
+  if (pub.status >= 500) logServerError(err, { correlationId: randomUUID(), app: 'admin' });
   return NextResponse.json(pub.body, { status: pub.status });
 }
 
