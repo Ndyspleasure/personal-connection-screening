@@ -41,6 +41,9 @@ export default async function DashboardPage() {
             <Link href="/policy">Policy</Link> — session lifetime, time limit & retake
           </li>
           <li>
+            <Link href="/access-codes">Access codes</Link> — codes for gated sessions (Pendekatan)
+          </li>
+          <li>
             <Link href="/operations">Operations</Link> — submissions, audit trail & session revoke
           </li>
         </ul>
