@@ -1,0 +1,90 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1788421785241,
+      "tag": "0000_supreme_bill_hollister",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788422596034,
+      "tag": "0001_nosy_firelord",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788443020501,
+      "tag": "0002_mighty_emma_frost",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788443031787,
+      "tag": "0003_immutability_guards",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788444438858,
+      "tag": "0004_cuddly_major_mapleleaf",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788444445892,
+      "tag": "0005_execution_immutability",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788444847270,
+      "tag": "0006_pretty_guardsmen",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788444857985,
+      "tag": "0007_finalization_immutability",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788531053197,
+      "tag": "0008_overrated_mathemanic",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788531066373,
+      "tag": "0009_audit_append_only",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788565644889,
+      "tag": "0010_big_randall",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788565651586,
+      "tag": "0011_integrity_finding_append_only",
+      "breakpoints": true
+    }
+  ]
+}
