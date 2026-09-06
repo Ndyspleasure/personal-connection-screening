@@ -39,6 +39,9 @@ export interface StartInput {
   scoringVersion: ScoringVersion;
   policyVersion: PolicyVersion;
   candidateContextId?: string | null;
+  // Which CMS session this attempt belongs to (Two-Session phase). Optional so
+  // legacy callers keep working; recorded on the attempt when provided.
+  sessionKindId?: string | null;
   now?: Date;
 }
 
@@ -109,6 +112,7 @@ export const sessionService = {
       const attempt = await insertAttempt(tx, {
         publicRef: generatePublicRef('attempt'),
         candidateContextId: input.candidateContextId ?? null,
+        sessionKindId: input.sessionKindId ?? null,
         questionnaireVersionId: input.questionnaireVersion.id,
         scoringVersionId: input.scoringVersion.id,
         policyVersionId: input.policyVersion.id,

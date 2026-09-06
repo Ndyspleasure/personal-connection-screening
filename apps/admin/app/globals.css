@@ -230,3 +230,186 @@ td button {
 .status-line.error {
   color: #f87171;
 }
+
+/* --- Two-session CMS: badges, toast, confirm dialog, feedback ------------- */
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.badge.active {
+  background: rgba(52, 211, 153, 0.14);
+  color: #34d399;
+}
+.badge.disabled {
+  background: rgba(161, 161, 170, 0.14);
+  color: var(--muted);
+}
+.badge.revoked {
+  background: rgba(248, 113, 113, 0.14);
+  color: #f87171;
+}
+
+/* Button working/success/error micro-states (transform+opacity only). */
+button.is-busy {
+  position: relative;
+  color: transparent !important;
+}
+button.is-busy::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  color: #0b0c10;
+  animation: pcs-spin 0.7s linear infinite;
+}
+button.ghost.is-busy::after,
+button.danger.is-busy::after {
+  color: var(--fg);
+}
+button.is-ok {
+  animation: pcs-pop 0.4s ease;
+}
+@keyframes pcs-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pcs-pop {
+  0% {
+    transform: scale(0.96);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* One-time code reveal after creation. */
+.code-reveal {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #2f5e4d;
+  background: rgba(52, 211, 153, 0.08);
+  border-radius: 0.6rem;
+  animation: pcs-rise 0.35s ease both;
+}
+.code-reveal .value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+/* Toast: enter, hold, exit. */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(0);
+  z-index: 60;
+  max-width: min(92vw, 26rem);
+  padding: 0.7rem 1rem;
+  border-radius: 0.6rem;
+  border: 1px solid #2a2b33;
+  background: #16171d;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  font-size: 0.9rem;
+  animation: pcs-toast-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.toast.leaving {
+  animation: pcs-toast-out 0.24s ease forwards;
+}
+.toast.ok {
+  border-color: #2f5e4d;
+}
+.toast.error {
+  border-color: #7f1d1d;
+}
+@keyframes pcs-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+@keyframes pcs-toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+}
+
+/* Confirm dialog for dangerous actions (revoke). */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(6, 6, 10, 0.62);
+  backdrop-filter: blur(3px);
+  animation: pcs-fade 0.2s ease both;
+}
+.modal-card {
+  width: min(30rem, 100%);
+  background: #16171d;
+  border: 1px solid #2a2b33;
+  border-radius: 0.9rem;
+  padding: 1.4rem 1.5rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  animation: pcs-rise 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.modal-card.danger {
+  border-color: #7f1d1d;
+}
+.modal-card h2 {
+  margin-top: 0;
+}
+@keyframes pcs-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pcs-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.is-busy::after {
+    animation-duration: 1.4s;
+  }
+  .toast,
+  .toast.leaving,
+  .modal-backdrop,
+  .modal-card,
+  .code-reveal,
+  button.is-ok {
+    animation: none;
+  }
+}

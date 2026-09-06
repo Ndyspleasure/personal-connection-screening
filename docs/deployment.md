@@ -20,6 +20,11 @@ packages build transitively.
 The database (PostgreSQL / Supabase) and Upstash Redis are shared services both
 projects talk to server-side only.
 
+Both apps pin their serverless functions to a single region via each app's
+`vercel.json` (`"regions": ["sin1"]`, Singapore) so function execution is
+co-located with the database region and DB round-trips stay in-region. Set this
+to match wherever the database actually lives.
+
 ## Environments (Brief §46)
 
 Three isolated environments, each with its **own database and secrets** — never

@@ -7,15 +7,34 @@ import { z } from 'zod';
  * fields become side effects (Threat §77).
  */
 
+/** Stable session-kind slug used across the two-session API. */
+export const sessionKeySchema = z
+  .string()
+  .min(1)
+  .max(120)
+  .regex(/^[a-z0-9-]+$/, 'invalid session key');
+
 /** POST /api/public/session — Start. Idempotent per-cookie via route handler. */
 export const startSessionRequestSchema = z
   .object({
+    // Which CMS session to start; omitted → the default (open) session.
+    sessionKey: sessionKeySchema.optional(),
     // Reserved for future candidate-name capture at the contact gate; unused
     // by the current flow. Kept optional to avoid client rejection when omitted.
     displayName: z.string().min(1).max(200).optional(),
   })
   .strict();
 export type StartSessionRequest = z.infer<typeof startSessionRequestSchema>;
+
+/** POST /api/public/access-code — verify a gated session's code (server-checked). */
+export const accessCodeVerifyRequestSchema = z
+  .object({
+    sessionKey: sessionKeySchema,
+    // Raw code as typed/pasted; normalised + hashed server-side, never stored.
+    code: z.string().min(1).max(128),
+  })
+  .strict();
+export type AccessCodeVerifyRequest = z.infer<typeof accessCodeVerifyRequestSchema>;
 
 /** PUT /api/public/answer — Save one answer. */
 export const saveAnswerRequestSchema = z

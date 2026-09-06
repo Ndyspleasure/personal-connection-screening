@@ -41,6 +41,7 @@ export async function insertAttempt(
   input: {
     publicRef: string;
     candidateContextId?: string | null;
+    sessionKindId?: string | null;
     questionnaireVersionId: string;
     scoringVersionId: string;
     policyVersionId: string;
@@ -54,6 +55,7 @@ export async function insertAttempt(
     .values({
       publicRef: input.publicRef,
       candidateContextId: input.candidateContextId ?? null,
+      sessionKindId: input.sessionKindId ?? null,
       questionnaireVersionId: input.questionnaireVersionId,
       scoringVersionId: input.scoringVersionId,
       policyVersionId: input.policyVersionId,

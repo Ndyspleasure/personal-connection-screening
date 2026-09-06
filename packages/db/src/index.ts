@@ -21,7 +21,9 @@ export type {
   Answer,
   AttemptPolicySnapshot,
 } from './schema/execution';
+export type { SessionKind, AccessCode } from './schema/sessions';
 export type { Submission, Evaluation, Result, Verification } from './schema/finalization';
+export * from './repositories/sessions';
 export * from './repositories/execution';
 export * from './repositories/answers';
 export * from './repositories/finalization';

@@ -17,18 +17,15 @@ interface AnswerLocalState {
   selectedOptionVersionIds: string[];
   textValue: string;
   numericValue: string;
-  revision: number | null; // server-known revision; null before first save
+  revision: number | null;
   saving: boolean;
   error: string | null;
 }
 
 /**
- * /session — the questionnaire.
- *
- * Loads GET /api/public/session + GET /api/public/questionnaire; renders
- * questions from the SERVER-LOCKED version (Master §7, Func §19–21). Every
- * answer PUT is revision-guarded (Func §29, §33). Submit is idempotent from
- * the client too (dedupes clicks locally; server enforces one final).
+ * /session — the questionnaire. Server-locked version, revision-guarded saves,
+ * idempotent submit (logic unchanged). Restyled to the premium system with
+ * per-answer feedback, a progress indicator, and reduced-motion-safe animation.
  */
 export default function SessionPage() {
   const router = useRouter();
@@ -36,7 +33,6 @@ export default function SessionPage() {
     'loading',
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [attemptRef, setAttemptRef] = useState<string | null>(null);
   const [questions, setQuestions] = useState<QuestionView[]>([]);
   const [answers, setAnswers] = useState<Record<string, AnswerLocalState>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -53,13 +49,8 @@ export default function SessionPage() {
         return;
       }
       if (!sessionRes.ok) throw new Error('session fetch failed');
-      const session = (await sessionRes.json()) as {
-        attemptRef: string;
-        status: string;
-      };
-      setAttemptRef(session.attemptRef);
+      const session = (await sessionRes.json()) as { attemptRef: string; status: string };
       if (session.status === 'COMPLETED') {
-        // Fetch our own result and jump to /result/[ref].
         setStatus('completed');
         return;
       }
@@ -72,7 +63,6 @@ export default function SessionPage() {
       if (!qRes.ok) throw new Error('questionnaire fetch failed');
       const q = (await qRes.json()) as { questions: QuestionView[] };
       setQuestions(q.questions);
-      // Initialize local answers empty; revision is null until first save.
       const init: Record<string, AnswerLocalState> = {};
       for (const qq of q.questions) {
         init[qq.questionVersionId] = {
@@ -100,7 +90,6 @@ export default function SessionPage() {
     async (q: QuestionView) => {
       const current = answers[q.questionVersionId];
       if (!current) return;
-      // Build the payload per question type.
       const payload: Record<string, unknown> = {
         questionVersionId: q.questionVersionId,
         expectedRevision: current.revision,
@@ -174,45 +163,62 @@ export default function SessionPage() {
     }
   }, [idempotencyKey, router, submitting]);
 
+  const answeredCount = useMemo(
+    () =>
+      questions.filter((q) => {
+        const a = answers[q.questionVersionId];
+        if (!a) return false;
+        if (q.type === 'text') return a.textValue.trim() !== '';
+        if (q.type === 'numeric') return a.numericValue !== '';
+        return a.selectedOptionVersionIds.length > 0;
+      }).length,
+    [questions, answers],
+  );
+
   if (status === 'loading')
     return (
-      <main>
-        <p className="muted">Loading…</p>
+      <main className="narrow">
+        <div
+          className="skeleton"
+          style={{ height: '2rem', width: '60%', marginBottom: '1.5rem' }}
+        />
+        <div className="skeleton" style={{ height: '9rem', marginBottom: '1rem' }} />
+        <div className="skeleton" style={{ height: '9rem' }} />
       </main>
     );
-  if (status === 'expired') {
+  if (status === 'expired')
     return (
-      <main>
-        <h1>Session unavailable</h1>
-        <p className="muted">
+      <main className="narrow">
+        <h1 className="enter">Session unavailable</h1>
+        <p className="muted enter enter-1">
           Your session has expired or is no longer available. Historical progress is safe on the
           server.
         </p>
-        <a className="primary" href="/start">
+        <a className="btn primary enter enter-2" href="/start">
           Start a new session
         </a>
       </main>
     );
-  }
-  if (status === 'completed') {
+  if (status === 'completed')
     return (
-      <main>
-        <h1>Already completed</h1>
-        <p className="muted">This attempt has already been finalized.</p>
+      <main className="narrow">
+        <h1 className="enter">Already completed</h1>
+        <p className="muted enter enter-1">This attempt has already been finalized.</p>
+        <a className="btn ghost enter enter-2" href="/">
+          Back home
+        </a>
       </main>
     );
-  }
-  if (status === 'error') {
+  if (status === 'error')
     return (
-      <main>
-        <h1>Something went wrong</h1>
-        <p className="status-line error">{errorMessage}</p>
-        <button className="ghost" onClick={load}>
+      <main className="narrow">
+        <h1 className="enter">Something went wrong</h1>
+        <p className="status-line error enter enter-1">{errorMessage}</p>
+        <button className="btn subtle enter enter-2" onClick={load}>
           Retry
         </button>
       </main>
     );
-  }
 
   const requiredMissing = questions.some((q) => {
     if (!q.required) return false;
@@ -225,30 +231,61 @@ export default function SessionPage() {
     if (q.type === 'numeric') return a.numericValue === '';
     return true;
   });
+  const progress = questions.length ? Math.round((answeredCount / questions.length) * 100) : 0;
 
   return (
-    <main>
-      <h1>Questionnaire</h1>
-      <p className="muted">Attempt {attemptRef}. Answers save server-side automatically.</p>
+    <main className="narrow">
+      <span className="eyebrow enter">Questionnaire</span>
+      <h1 className="enter enter-1" style={{ fontSize: 'clamp(1.6rem, 3vw + 1rem, 2.2rem)' }}>
+        A few honest questions
+      </h1>
+      <p className="muted enter enter-1">Answers save on the server as you go.</p>
 
-      {questions.map((q) => {
+      <div
+        className="enter enter-2"
+        aria-hidden="true"
+        style={{
+          height: '0.4rem',
+          borderRadius: '999px',
+          background: 'var(--surface-2)',
+          overflow: 'hidden',
+          margin: '0.5rem 0 1.5rem',
+        }}
+      >
+        <div
+          style={{
+            height: '100%',
+            width: `${progress}%`,
+            background: 'var(--grad-primary)',
+            transition: 'width 0.3s var(--ease)',
+          }}
+        />
+      </div>
+
+      {questions.map((q, i) => {
         const a = answers[q.questionVersionId]!;
+        const saved = a.revision !== null && !a.saving && !a.error;
         return (
-          <fieldset key={q.questionVersionId}>
-            <legend>
+          <section
+            className={`panel enter enter-${Math.min(i + 1, 4)}`}
+            key={q.questionVersionId}
+            style={{ marginBottom: '1rem' }}
+          >
+            <h2 style={{ marginTop: 0 }}>
               {q.text}
-              {q.required ? ' *' : ''}
-            </legend>
-            {q.description ? <p className="muted">{q.description}</p> : null}
+              {q.required ? <span style={{ color: 'var(--primary)' }}> *</span> : null}
+            </h2>
+            {q.description ? <p className="muted small">{q.description}</p> : null}
 
-            {(q.type === 'single_choice' || q.type === 'boolean') && (
-              <>
-                {q.options.map((opt) => (
-                  <label className="option" key={opt.id}>
+            {(q.type === 'single_choice' || q.type === 'boolean') &&
+              q.options.map((opt) => {
+                const on = a.selectedOptionVersionIds[0] === opt.id;
+                return (
+                  <label className={`choice${on ? ' selected' : ''}`} key={opt.id}>
                     <input
                       type="radio"
                       name={q.questionVersionId}
-                      checked={a.selectedOptionVersionIds[0] === opt.id}
+                      checked={on}
                       onChange={() =>
                         setAnswers((s) => ({
                           ...s,
@@ -261,38 +298,34 @@ export default function SessionPage() {
                     />
                     {opt.label}
                   </label>
-                ))}
-              </>
-            )}
+                );
+              })}
 
-            {q.type === 'multiple_choice' && (
-              <>
-                {q.options.map((opt) => (
-                  <label className="option" key={opt.id}>
+            {q.type === 'multiple_choice' &&
+              q.options.map((opt) => {
+                const on = a.selectedOptionVersionIds.includes(opt.id);
+                return (
+                  <label className={`choice${on ? ' selected' : ''}`} key={opt.id}>
                     <input
                       type="checkbox"
-                      checked={a.selectedOptionVersionIds.includes(opt.id)}
+                      checked={on}
                       onChange={(e) =>
                         setAnswers((s) => {
-                          const current = s[q.questionVersionId]!;
-                          const set = new Set(current.selectedOptionVersionIds);
+                          const cur = s[q.questionVersionId]!;
+                          const set = new Set(cur.selectedOptionVersionIds);
                           if (e.target.checked) set.add(opt.id);
                           else set.delete(opt.id);
                           return {
                             ...s,
-                            [q.questionVersionId]: {
-                              ...current,
-                              selectedOptionVersionIds: [...set],
-                            },
+                            [q.questionVersionId]: { ...cur, selectedOptionVersionIds: [...set] },
                           };
                         })
                       }
                     />
                     {opt.label}
                   </label>
-                ))}
-              </>
-            )}
+                );
+              })}
 
             {q.type === 'text' && (
               <textarea
@@ -326,26 +359,43 @@ export default function SessionPage() {
               />
             )}
 
-            <div>
-              <button className="ghost" onClick={() => saveAnswer(q)} disabled={a.saving}>
-                {a.saving ? 'Saving…' : 'Save'}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                marginTop: '0.75rem',
+              }}
+            >
+              <button
+                className={`btn subtle${a.saving ? ' busy' : ''}${saved ? ' ok' : ''}`}
+                onClick={() => saveAnswer(q)}
+                disabled={a.saving}
+              >
+                {a.saving ? 'Saving…' : saved ? '✓ Saved' : 'Save answer'}
               </button>
-              {a.error ? <span className="status-line error"> {a.error}</span> : null}
-              {a.revision !== null && !a.saving && !a.error ? (
-                <span className="status-line"> Saved (rev {a.revision}).</span>
-              ) : null}
+              {a.error ? <span className="status-line error">{a.error}</span> : null}
             </div>
-          </fieldset>
+          </section>
         );
       })}
 
-      <button className="primary" onClick={submit} disabled={submitting || requiredMissing}>
+      <button
+        className={`btn primary block${submitting ? ' busy' : ''}`}
+        onClick={submit}
+        disabled={submitting || requiredMissing}
+        style={{ marginTop: '0.5rem' }}
+      >
         {submitting ? 'Submitting…' : 'Submit'}
       </button>
       {requiredMissing ? (
-        <p className="status-line"> Answer all required questions to submit.</p>
+        <p className="status-line">Answer all required questions to submit.</p>
       ) : null}
-      {submitError ? <p className="status-line error"> {submitError}</p> : null}
+      {submitError ? (
+        <p className="status-line error" role="alert">
+          {submitError}
+        </p>
+      ) : null}
     </main>
   );
 }

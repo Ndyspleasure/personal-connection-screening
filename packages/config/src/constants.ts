@@ -45,6 +45,9 @@ export const RATE_LIMITS = {
   answerSave: { limit: 120, windowSeconds: 60 },
   submit: { limit: 10, windowSeconds: 60 },
   verificationLookup: { limit: 20, windowSeconds: 60 },
+  // Access-code entry for gated sessions — tight budget to blunt brute force
+  // (Threat §28–29); the server also enforces expiry/usage caps.
+  accessCode: { limit: 8, windowSeconds: 60 },
   adminLogin: { limit: 10, windowSeconds: 60 },
 } as const;
 
