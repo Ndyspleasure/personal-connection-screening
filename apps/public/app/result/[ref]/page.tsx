@@ -12,11 +12,9 @@ interface ResultView {
 }
 
 /**
- * /result/[ref] — server-authoritative result page (Func §62–65).
- *
- * Copy stays non-judgmental (Master §28). Numeric score is deliberately NOT
- * shown to the public (confirmed decision). Refresh returns the same result
- * because the server has already persisted it (Func §63).
+ * /result/[ref] — server-authoritative result page (Func §62–65). Copy stays
+ * non-judgmental (Master §28); no numeric score is shown. Refresh returns the
+ * same persisted result. Restyled with an entrance animation on the outcome.
  */
 export default function ResultPage({ params }: { params: Promise<{ ref: string }> }) {
   const { ref } = use(params);
@@ -52,45 +50,56 @@ export default function ResultPage({ params }: { params: Promise<{ ref: string }
 
   if (state.kind === 'loading')
     return (
-      <main>
-        <p className="muted">Loading…</p>
+      <main className="narrow">
+        <div
+          className="skeleton"
+          style={{ height: '2.5rem', width: '70%', marginBottom: '1rem' }}
+        />
+        <div className="skeleton" style={{ height: '7rem' }} />
       </main>
     );
   if (state.kind === 'error')
     return (
-      <main>
-        <h1>Result unavailable</h1>
-        <p className="status-line error">{state.message}</p>
+      <main className="narrow">
+        <h1 className="enter">Result unavailable</h1>
+        <p className="status-line error enter enter-1">{state.message}</p>
+        <a className="btn ghost enter enter-2" href="/">
+          Back home
+        </a>
       </main>
     );
 
   const r = state.result;
   const pass = r.result === 'PASS';
   return (
-    <main>
-      <h1>
-        {pass ? "You're in." : 'Not a match for this connection flow.'}{' '}
-        <span className={`result-badge ${pass ? 'pass' : 'fail'}`}>{r.result}</span>
-      </h1>
-      <p className="muted">
+    <main className="narrow">
+      <span className="eyebrow enter">Your result</span>
+      <h1 className="enter enter-1">{pass ? 'You’re in.' : 'Thank you for taking the time.'}</h1>
+      <p className="enter enter-2">
+        <span className={`result-badge ${pass ? 'pass' : 'fail'}`}>
+          {pass ? '✓ ' : ''}
+          {r.result}
+        </span>
+      </p>
+      <p className="muted enter enter-2">
         {pass
           ? 'Looks like we have something worth talking about.'
-          : 'Thank you for taking the time.'}
+          : 'The result is decided by the server — no hard feelings.'}
       </p>
-      <div className="panel">
-        <p className="muted">
-          Completed {new Date(r.completedAt).toLocaleString()}. Reference {r.resultRef}.
+      <div className="panel enter enter-3">
+        <p className="muted small" style={{ margin: 0 }}>
+          Completed {new Date(r.completedAt).toLocaleString()} · Reference {r.resultRef}
         </p>
         {r.verificationRef ? (
-          <p>
+          <p className="small" style={{ marginBottom: 0 }}>
             Public verification:{' '}
             <Link href={`/verify/${r.verificationRef}`}>{r.verificationRef}</Link>
           </p>
         ) : null}
       </div>
       {pass && r.contactAvailable && r.resultRef ? (
-        <Link className="primary" href={`/contact/${r.resultRef}`}>
-          Continue to chat
+        <Link className="btn primary enter enter-4" href={`/contact/${r.resultRef}`}>
+          Continue to chat →
         </Link>
       ) : null}
     </main>

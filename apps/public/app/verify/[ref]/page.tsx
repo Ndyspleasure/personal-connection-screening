@@ -50,24 +50,26 @@ export default function VerifyPage({ params }: { params: Promise<{ ref: string }
 
   if (state.kind === 'loading')
     return (
-      <main>
-        <p className="muted">Looking up…</p>
+      <main className="narrow">
+        <div className="skeleton" style={{ height: '2rem', width: '50%', marginBottom: '1rem' }} />
+        <div className="skeleton" style={{ height: '6rem' }} />
       </main>
     );
   if (state.kind === 'error')
     return (
-      <main>
-        <h1>Verification</h1>
-        <p className="status-line error">{state.message}</p>
+      <main className="narrow">
+        <h1 className="enter">Verification</h1>
+        <p className="status-line error enter enter-1">{state.message}</p>
       </main>
     );
 
   const v = state.view;
   const valid = v.status === 'VALID';
   return (
-    <main>
-      <h1>Verification</h1>
-      <div className="panel">
+    <main className="narrow">
+      <span className="eyebrow enter">Verification</span>
+      <h1 className="enter enter-1">A verifiable record</h1>
+      <div className="panel enter enter-2">
         <p>
           <span className={`result-badge ${valid ? 'pass' : 'fail'}`}>
             {valid ? 'VALID' : 'REVOKED'}

@@ -4,11 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 /**
- * /start — the CTA screen.
- *
- * Client-side POST /api/public/session opens (or reuses) a session cookie
- * (Master §7, Functional §7). Double-click is disabled locally AND server
- * dedup lives in the route handler (Master §7.2).
+ * /start — a direct entry point for the open session (Perkenalan Teman). The
+ * picker on the home page is the primary route; this keeps a shareable,
+ * single-purpose start screen. Server dedupes double-starts (Master §7.2).
  */
 export default function StartPage() {
   const router = useRouter();
@@ -40,7 +38,6 @@ export default function StartPage() {
     }
   }
 
-  // If the browser already has an active session, jump straight to /session.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -53,18 +50,25 @@ export default function StartPage() {
   }, [router]);
 
   return (
-    <main>
-      <h1>Before we say hi</h1>
-      <p className="muted">
-        A short questionnaire helps us skip the &ldquo;who are you?&rdquo; small talk. The result is
-        decided by the server, not your browser.
+    <main className="narrow">
+      <span className="eyebrow enter">✦ Before we say hi</span>
+      <h1 className="enter enter-1">
+        <span className="gradient-text">A short, honest questionnaire</span>
+      </h1>
+      <p className="muted enter enter-2">
+        It helps us skip the “who are you?” small talk. The result is decided by the server, not
+        your browser.
       </p>
-      <div className="panel">
-        <p>
+      <div className="panel enter enter-3">
+        <p style={{ marginTop: 0 }}>
           Your progress is saved on the server. You can leave and come back within the session
           window.
         </p>
-        <button className="primary" onClick={start} disabled={busy}>
+        <button
+          className={`btn primary block${busy ? ' busy' : ''}`}
+          onClick={start}
+          disabled={busy}
+        >
           {busy ? 'Starting…' : 'Start'}
         </button>
       </div>

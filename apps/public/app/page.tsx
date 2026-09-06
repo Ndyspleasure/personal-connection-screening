@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { getPublicContent, type PublicContent } from '@pcs/domain';
 import { getDb } from '@pcs/db';
+import { SessionPicker } from '../components/SessionPicker';
 
 // Content is server-authoritative and CMS-driven; never statically inlined.
 export const dynamic = 'force-dynamic';
@@ -25,24 +25,37 @@ export default async function HomePage() {
 
   return (
     <main>
-      <h1>{heroTitle}</h1>
-      {heroSubtitle ? <p className="muted">{heroSubtitle}</p> : null}
+      <span className="eyebrow enter">✦ A personal connection</span>
+      <h1 className="enter enter-1">
+        <span className="gradient-text">{heroTitle}</span>
+      </h1>
+      {heroSubtitle ? (
+        <p className="muted enter enter-2" style={{ fontSize: '1.12rem', maxWidth: '42ch' }}>
+          {heroSubtitle}
+        </p>
+      ) : null}
 
       {content.profile ? (
         <>
-          {otherSections.map((s, i) => (
-            <section className="panel" key={`${s.sectionType}-${i}`}>
-              {s.title ? <h2>{s.title}</h2> : null}
-              {s.subtitle ? <p className="muted">{s.subtitle}</p> : null}
-              {s.body ? <p>{s.body}</p> : null}
-            </section>
-          ))}
-          <Link className="primary" href="/start">
-            Get started
-          </Link>
+          <SessionPicker />
+          {otherSections.length ? (
+            <div style={{ marginTop: '2.75rem' }}>
+              {otherSections.map((s, i) => (
+                <section
+                  className="panel enter"
+                  key={`${s.sectionType}-${i}`}
+                  style={{ marginTop: '1rem' }}
+                >
+                  {s.title ? <h2 style={{ marginTop: 0 }}>{s.title}</h2> : null}
+                  {s.subtitle ? <p className="muted">{s.subtitle}</p> : null}
+                  {s.body ? <p style={{ marginBottom: 0 }}>{s.body}</p> : null}
+                </section>
+              ))}
+            </div>
+          ) : null}
         </>
       ) : (
-        <p className="muted">
+        <p className="muted enter enter-2">
           {ready
             ? 'This connection flow has not been published yet.'
             : 'Bootstrap mode — content, questions, and copy are managed in the admin CMS and will appear here once the database is provisioned and published.'}
