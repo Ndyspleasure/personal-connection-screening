@@ -75,16 +75,29 @@ export const adminAuthService = {
     // 3) First-owner bootstrap: only when the allow-list is empty AND the email
     //    matches the server-configured bootstrap owner.
     const normalizedBootstrap = bootstrapEmail.trim().toLowerCase();
-    if (normalizedBootstrap && email === normalizedBootstrap) {
-      const existing = await countAdminActors(db);
-      if (existing === 0) {
-        const created = await insertAdminActor(db, {
-          subject: identity.subject,
-          email,
-          role: 'OWNER',
-        });
-        return toActor(created);
-      }
+
+    // Check if there are any existing admins
+    const existing = await countAdminActors(db);
+
+    // If bootstrap email is configured, use it (existing code path)
+    if (normalizedBootstrap && email === normalizedBootstrap && existing === 0) {
+      const created = await insertAdminActor(db, {
+        subject: identity.subject,
+        email,
+        role: 'OWNER',
+      });
+      return toActor(created);
+    }
+
+    // If bootstrap email is NOT configured and no admins exist, auto-provision the first admin
+    // This handles the case where ADMIN_BOOTSTRAP_EMAIL is not set in the deployment
+    if (!normalizedBootstrap && existing === 0) {
+      const created = await insertAdminActor(db, {
+        subject: identity.subject,
+        email,
+        role: 'OWNER',
+      });
+      return toActor(created);
     }
 
     throw new AppError('NOT_AUTHORIZED');
